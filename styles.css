@@ -52,3 +52,11 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 .task-manager-row .row{gap:5px;flex-wrap:nowrap}
 .task-manager-row .action{padding:6px 8px;font-size:10px}
 @media(max-width:560px){.task-manager-row{grid-template-columns:1fr auto}.task-manager-row .row{grid-column:1/-1;justify-content:flex-end}.task-manager-row .action{flex:1}}
+
+/* Shell command catalogue and practice feedback */
+.shell-toolbar{gap:8px}
+.shell-toolbar .shell-state{margin-left:auto}
+.shell-footer{gap:8px}
+.shell-lab{min-width:0}
+.shell-screen{overscroll-behavior:contain}
+.shell-tabs button:focus-visible,#shell-command:focus-visible{outline:2px solid #80b5ff;outline-offset:2px}
