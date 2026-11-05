@@ -251,3 +251,10 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 .cs-completions[hidden]{display:none}
 .cs-completions button{display:block;width:100%;padding:6px 9px;border:0;border-radius:5px;background:transparent;color:#e4edf8;text-align:left;font:11px ui-monospace,monospace;cursor:pointer}
 .cs-completions button:hover,.cs-completions button:focus{background:#345477;outline:0}
+
+
+/* Desktop/window stacking repair: app surfaces must always cover desktop shortcuts. */
+#desktop{isolation:isolate}
+#desktop .desktop-icons{z-index:0}
+#desktop>.window{z-index:20}
+#desktop>.window:focus-within{outline:none}
