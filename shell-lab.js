@@ -188,10 +188,8 @@ if(cmd==="sed"){
  const target=a[a.length-1],x=resolveFile(target);if(!x)throw Error("Usage: sed 's/old/new/g' <file>");
  const expr=a.slice(0,-1).join(" ").match(/^s([/|#])(.+?)\1(.*?)\1([g]?)$/);
  if(!expr)throw Error("Supported sed form: sed 's/old/new/g' <file>");
- const old=expr[2],replacement=expr[3],content=String(x.file.content||"");
- return content.replace(new RegExp(old.replace(/[.*+?^{}()|[\]\\]/g,"\\return null;
-}
-function renderShell"),expr[4]?"g":"") ,replacement);
+ const content=String(x.file.content||"");
+ return expr[4]==="g"?content.split(expr[2]).join(expr[3]):content.replace(expr[2],expr[3]);
 }
 if(cmd==="awk"){
  const target=a[a.length-1],x=resolveFile(target);if(!x)throw Error("Usage: awk '{print $1}' <file>");
