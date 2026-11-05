@@ -258,3 +258,86 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 #desktop .desktop-icons{z-index:0}
 #desktop>.window{z-index:20}
 #desktop>.window:focus-within{outline:none}
+
+
+/* Responsive system-wide layout: phones, tablets, laptops and large displays. */
+:root{--webos-taskbar-h:58px}
+html,body{min-width:280px;min-height:100%;overscroll-behavior:none}
+#desktop{inset:0 0 calc(var(--webos-taskbar-h) + env(safe-area-inset-bottom,0px));min-width:0;min-height:0;overflow:hidden}
+.desktop-top{max-width:calc(100% - 32px)}
+.desktop-icons{max-height:calc(100% - 110px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.window,.extra-window{box-sizing:border-box;max-width:calc(100vw - 16px);max-height:calc(100dvh - var(--webos-taskbar-h) - 16px - env(safe-area-inset-top,0px));min-width:0;min-height:0}
+.window-body,.extra-window .window-body{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;overflow-wrap:anywhere}
+.window-body>*{max-width:100%;min-width:0}
+.window-body img,.window-body video,.window-body iframe,.window-body canvas{max-width:100%}
+.taskbar{height:calc(var(--webos-taskbar-h) + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:env(safe-area-inset-bottom,0px);min-width:0}
+.task-items{min-width:0;overscroll-behavior-x:contain}
+.task-item{flex:0 1 auto;min-width:0}
+.system-tray{flex:0 0 auto}
+.launcher{max-height:calc(100dvh - var(--webos-taskbar-h) - 20px - env(safe-area-inset-bottom,0px));padding:max(12px,2vw)}
+.context-menu{max-width:calc(100vw - 12px);max-height:calc(100dvh - 12px);overflow:auto}
+.toast{max-width:calc(100vw - 24px);width:max-content;text-align:center;overflow-wrap:anywhere}
+.window.maximized,.extra-window.maximized{left:8px!important;top:8px!important;right:8px!important;bottom:calc(var(--webos-taskbar-h) + 8px)!important;width:auto!important;height:auto!important;max-width:none;max-height:none}
+@media(max-width:900px){
+ .window,.extra-window{max-width:calc(100vw - 12px);max-height:calc(100dvh - var(--webos-taskbar-h) - 12px)}
+ .desktop-welcome{right:4%;bottom:5%}
+ .desktop-welcome h1{font-size:clamp(34px,7vw,68px)}
+ .window-body{padding:clamp(10px,2vw,15px)}
+}
+@media(max-width:650px){
+ :root{--webos-taskbar-h:56px}
+ #desktop{inset:0 0 calc(var(--webos-taskbar-h) + env(safe-area-inset-bottom,0px))}
+ .desktop-top{top:10px;left:10px;gap:7px}
+ .desktop-icons{top:56px;left:5px;right:5px;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));grid-auto-rows:minmax(70px,auto);gap:2px;max-height:calc(100% - 135px);justify-items:center}
+ .desktop-icon{width:100%;max-width:76px;min-height:68px;padding:5px 2px;gap:5px;overflow-wrap:anywhere;text-align:center;touch-action:manipulation}
+ .desktop-icon .app-icon{font-size:24px}
+ .desktop-welcome{right:12px;bottom:8px;max-width:55%;text-align:right}
+ .desktop-welcome .welcome-kicker{font-size:8px}
+ .desktop-welcome h1{font-size:clamp(27px,8vw,46px);margin:7px 0}
+ .desktop-welcome p{font-size:10px}
+ .taskbar{gap:5px;padding-left:6px;padding-right:6px}
+ .launcher-button{flex:0 0 38px;width:38px;height:38px}
+ .task-items{gap:3px}
+ .task-item{max-width:clamp(62px,22vw,112px);padding:8px 7px;font-size:10px}
+ .system-tray{gap:5px}
+ .tray-clock{font-size:10px}
+ .tray-clock small{display:none}
+ .window,.extra-window{position:fixed!important;left:4px!important;top:4px!important;right:4px!important;bottom:calc(var(--webos-taskbar-h) + 4px + env(safe-area-inset-bottom,0px))!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;border-radius:12px}
+ .window.maximized,.extra-window.maximized{left:3px!important;top:3px!important;right:3px!important;bottom:calc(var(--webos-taskbar-h) + 3px + env(safe-area-inset-bottom,0px))!important}
+ .titlebar{height:46px;min-height:46px;padding-left:10px;gap:7px}
+ .window-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .window-controls{gap:3px}
+ .window-controls button{width:34px;height:32px;flex:0 0 34px}
+ .window-body{padding:10px!important}
+ .launcher{left:6px;right:6px;bottom:calc(var(--webos-taskbar-h) + 6px + env(safe-area-inset-bottom,0px));width:auto;max-height:calc(100dvh - var(--webos-taskbar-h) - 18px - env(safe-area-inset-bottom,0px));border-radius:14px}
+ .app-grid{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
+ .launcher-foot{gap:8px;flex-wrap:wrap}
+ .context-menu{left:max(6px,var(--menu-left,6px));}
+ .toast{bottom:calc(var(--webos-taskbar-h) + 8px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:380px){
+ .desktop-icons{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:68px}
+ .desktop-icon{max-width:68px;font-size:9px}
+ .desktop-icon .app-icon{font-size:22px}
+ .taskbar{gap:3px}
+ .task-item{max-width:65px;padding:7px 5px;font-size:9px}
+ .tray-status{display:none}
+ .tray-clock{font-size:9px}
+ .window-controls button{width:31px;height:30px;flex-basis:31px}
+ .launcher-foot{font-size:9px}
+}
+@media(max-height:520px) and (min-width:651px){
+ :root{--webos-taskbar-h:48px}
+ .taskbar{height:var(--webos-taskbar-h)}
+ .window,.extra-window{max-height:calc(100dvh - var(--webos-taskbar-h) - 12px)}
+ .desktop-icons{grid-auto-rows:70px;grid-template-columns:repeat(2,76px)}
+ .desktop-welcome{display:none}
+}
+@media(hover:none),(pointer:coarse){
+ button,.desktop-icon,.task-item,.app-tile{touch-action:manipulation}
+ .desktop-icon:hover,.app-tile:hover,.action:hover{background-color:initial}
+ .window-controls button{min-width:34px;min-height:34px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
