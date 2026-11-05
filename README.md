@@ -23,7 +23,7 @@ A realistic Windows-inspired PC simulator that runs entirely in the browser. It 
 - Installable PWA and offline app-shell cache
 - Responsive full-screen app windows on phones
 - Office Studio for local documents and CSV import/export
-- Code Studio with an isolated sandboxed HTML preview
+- Code Studio with multi-file HTML/CSS/JavaScript projects, local project saving, file import/export, keyboard shortcuts, output console and a network-restricted sandboxed preview
 - Local audio/video player and PDF reader
 - Recycle Bin with restore and permanent deletion for Office Studio documents
 - Three virtual workspaces with keyboard switching
