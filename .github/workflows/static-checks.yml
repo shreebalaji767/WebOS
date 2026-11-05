@@ -1,0 +1,30 @@
+name: WebOS static checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check upgrades.js
+          node --check sw.js
+      - name: Validate manifest and required files
+        run: |
+          node -e "const m=require('./manifest.json'); if(!m.name || !m.start_url || !m.icons?.length) process.exit(1)"
+          test -f index.html
+          test -f styles.css
+          test -f assets/icon.svg
+      - name: Check patch whitespace
+        run: git diff --check
