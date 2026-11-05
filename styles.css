@@ -245,3 +245,9 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 .cs-completions[hidden]{display:none}.cs-completions button{display:block;width:100%;padding:6px 9px;border:0;border-radius:5px;background:transparent;color:#e4edf8;text-align:left;font:11px ui-monospace,monospace;cursor:pointer}.cs-completions button:hover,.cs-completions button:focus{background:#345477;outline:0}
 @media(max-width:850px){.code-studio-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(90px,auto) minmax(230px,1fr) minmax(190px,.8fr);overflow:auto}.cs-resizer{display:none}.code-file-panel{max-height:145px}.cs-layer-wrap{min-height:230px}.code-preview-panel{min-height:190px}}
 @media(max-width:560px){.cs-highlight,.cs-overlay-editor{font-size:11px;padding:10px}.cs-completions{left:8px;top:36px}}
+
+.cs-code-layer{position:relative;flex:1;min-width:0;min-height:0;overflow:hidden}
+.cs-completions{position:absolute;z-index:9;left:12px;top:38px;max-width:min(280px,85%);max-height:190px;overflow:auto;padding:4px;border:1px solid #536985;border-radius:8px;background:#17263a;box-shadow:0 8px 28px #0008}
+.cs-completions[hidden]{display:none}
+.cs-completions button{display:block;width:100%;padding:6px 9px;border:0;border-radius:5px;background:transparent;color:#e4edf8;text-align:left;font:11px ui-monospace,monospace;cursor:pointer}
+.cs-completions button:hover,.cs-completions button:focus{background:#345477;outline:0}
