@@ -23,3 +23,20 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 /* WebOS local tools upgrade */
 .clip-editor{height:125px!important;min-height:100px!important;resize:vertical!important}.mini-heading{font-size:13px;margin:8px 0 0}.clip-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#ffffff08}.clip-item p{font-size:11px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;max-height:54px;overflow:hidden;margin:5px 0 0}.clip-item .row{flex-wrap:nowrap}.setting-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin:8px 0}.password-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:12px}.password-result{flex:1;font-family:ui-monospace,monospace}.timer-tabs{display:flex;gap:7px}.timer-display{padding:22px 5px;text-align:center;font:clamp(38px,9vw,64px)/1.2 ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:.04em}.file-upgrade-tools{display:flex;align-items:center;gap:8px}.file-upgrade-tools .field{flex:1;min-width:100px;margin:0}.window-body section[hidden]{display:none!important}
 @media(max-width:520px){.clip-item{align-items:flex-start;flex-direction:column}.clip-item .row{width:100%;flex-wrap:wrap}.file-upgrade-tools{flex-wrap:wrap}.file-upgrade-tools .field{width:100%}.password-options{gap:9px}.timer-display{padding:16px 2px}}
+
+/* Multi-shell virtual terminal */
+.shell-lab{display:flex;flex-direction:column;gap:9px;min-height:290px;height:100%;font-size:12px}
+.shell-toolbar,.shell-tabs,.shell-footer{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.shell-toolbar{justify-content:space-between}
+.shell-tabs{gap:5px}
+.shell-tabs button{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit}
+.shell-tabs button[aria-selected="true"]{background:var(--accent,#526dce);color:white;border-color:transparent}
+.shell-state,.shell-subtitle,.shell-footer{color:var(--muted);font-size:10px}
+.shell-screen{flex:1;min-height:210px;max-height:calc(100dvh - 230px);overflow:auto;background:#101820;color:#d8f5df;border:1px solid #263b32;border-radius:10px;padding:12px;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}
+.shell-banner{color:#91b5a0;margin-bottom:8px}
+#shell-output{white-space:pre-wrap;overflow-wrap:anywhere}
+.shell-output-line{white-space:pre-wrap;overflow-wrap:anywhere;min-height:1.4em}
+.shell-input-row{display:flex;align-items:center;gap:7px;margin-top:5px}
+#shell-prompt{color:#8ed8a5;white-space:pre}
+#shell-command{flex:1;min-width:0;background:transparent;color:#fff;border:0;outline:0;font:inherit;padding:2px}
+.shell-footer{justify-content:space-between}
