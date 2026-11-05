@@ -141,3 +141,39 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
  .code-frame{min-height:220px}
  .code-bottom-tools{display:flex;flex-direction:column;gap:5px}
 }
+
+/* Code Studio usability refinements */
+.code-window .window-body{min-height:0;overscroll-behavior:contain}
+.code-studio{min-width:0}
+.code-studio-top{align-items:flex-start}
+.code-project-actions{min-width:0}
+.code-project-actions #code-project-name{flex:1 1 130px}
+.code-toolbar{position:relative}
+.code-toolbar .action:focus-visible,.code-project-actions .action:focus-visible,.code-file-select:focus-visible,.code-file-remove:focus-visible{outline:2px solid #2778c8;outline-offset:2px}
+.code-frame{display:block;min-width:0}
+.code-preview-heading #code-preview-state{display:inline-flex;align-items:center;gap:5px}
+.code-preview-heading #code-preview-state:before{content:"";width:7px;height:7px;border-radius:50%;background:#94a3b8}
+.code-preview-heading #code-preview-state:has(+ *){min-width:0}
+.code-preview-panel:has(#code-preview-state) #code-preview-state{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.code-console-line.warn{color:#fbbf24}
+.code-console-line.info{color:#c5d5e8}
+.code-bottom-tools{line-height:1.5}
+@media(max-width:850px){
+ .code-studio-layout{grid-template-columns:130px minmax(0,1fr);grid-template-rows:minmax(300px,1fr) minmax(260px,.8fr)}
+ .code-preview-panel{grid-column:1/-1}
+}
+@media(max-width:560px){
+ .code-window .window-body{overflow:auto!important}
+ .code-studio-top{display:flex;flex-direction:column}
+ .code-project-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .code-project-actions #code-project-name{grid-column:1/-1}
+ .code-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .code-toolbar .action{width:100%;min-width:0;white-space:normal}
+ .code-studio-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(300px,auto) minmax(330px,auto)}
+ .code-file-panel{max-height:150px}
+ .code-file-list{max-height:105px;overflow:auto}
+ .code-editor-panel{min-height:340px}
+ .code-preview-panel{min-height:350px}
+ .code-frame{min-height:230px}
+ .code-status{font-size:9px}
+}
