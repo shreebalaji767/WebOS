@@ -69,22 +69,25 @@ function splitShellSegments(source,operators){
 }
 function execute(raw){
  const segments=splitShellSegments(String(raw||""),["&&","||",";"]);
- let result="",lastCode=0;
+ let result="",lastCode=0,previousOp=null;
  for(const segment of segments){
-  if(segment.op==="&&"&&lastCode!==0)continue;
-  if(segment.op==="||"&&lastCode===0)continue;
-  const pipeline=splitShellSegments(segment.text,["|"]);let pipeValue=stdinBuffer;
-  for(let i=0;i<pipeline.length;i++){
-   stdinBuffer=i?pipeValue:null;
-   const part=pipeline[i].text;
-   const redir=splitShellSegments(part,[">>",">"]);
-   let command=redir[0]?.text||part;
-   const value=executeSingle(command);
-   pipeValue=value&&typeof value==="object"?"":String(value??"");
-   if(redir.length>1){const target=redir[1].text.trim().split(/\s+/)[0];if(!target)throw Error("Redirection target missing.");makeFile(target,pipeValue,redir[0].op===">>");}
-   if(i===pipeline.length-1)result=value;
-  }
-  lastCode=0;
+  if(previousOp==="&&"&&lastCode!==0){previousOp=segment.op;continue}
+  if(previousOp==="||"&&lastCode===0){previousOp=segment.op;continue}
+  try{
+   const pipeline=splitShellSegments(segment.text,["|"]);let pipeValue=stdinBuffer;
+   for(let i=0;i<pipeline.length;i++){
+    stdinBuffer=i?pipeValue:null;
+    const part=pipeline[i].text;
+    const redir=splitShellSegments(part,[">>",">"]);
+    let command=redir[0]?.text||part;
+    const value=executeSingle(command);
+    pipeValue=value&&typeof value==="object"?"":String(value??"");
+    if(redir.length>1){const target=redir[1].text.trim().split(/\s+/)[0];if(!target)throw Error("Redirection target missing.");makeFile(target,pipeValue,redir[0].op===">>");}
+    if(i===pipeline.length-1)result=value;
+   }
+   lastCode=0;
+  }catch(error){lastCode=1;result="webos: "+error.message}
+  previousOp=segment.op;
  }
  stdinBuffer=null;return result;
 }
