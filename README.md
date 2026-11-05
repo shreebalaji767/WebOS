@@ -17,7 +17,7 @@ A realistic Windows-inspired PC simulator that runs entirely in the browser. It 
 - Calculator with parentheses and standard arithmetic
 - Paint canvas with touch/mouse drawing and PNG export
 - Calendar reminders
-- Multi-shell virtual terminal with an expanded Bash, Zsh and PowerShell command catalogue, manuals, shell variables, text/file utilities, simulated system tools and beginner/intermediate/advanced practice exercises (never executes host operating-system commands)
+- Multi-shell virtual terminal with broad Bash, Zsh and PowerShell command catalogues, command search and manuals, shell variables, command chaining, redirection, basic pipelines, virtual file/text operations, simulated networking/system administration/package/storage tools, and beginner/intermediate/advanced practice exercises (never executes host operating-system commands)
 - Task Manager for switching, minimizing and closing open WebOS app windows, with approximate local-storage usage
 - Dark/light appearance, wallpapers and JSON backup/restore
 - Installable PWA and offline app-shell cache
