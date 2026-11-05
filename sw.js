@@ -1,4 +1,4 @@
-const CACHE='webos-shell-command-library-v1';
+const CACHE='webos-shell-full-command-practice-v2';
 const CORE=['./','./index.html','./styles.css','./app.js','./upgrades.js','./upgrades-v3.js','./pc-shell.js','./pc-lab.js','./shell-lab.js','./manifest.json','./assets/icon.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
