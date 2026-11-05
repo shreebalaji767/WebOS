@@ -37,3 +37,11 @@ The repository root contains `index.html`, so no build step or package installat
 - Offline support is provided by a service worker and requires HTTPS (GitHub Pages provides HTTPS).
 
 No backend, database server, external API, paid service, advertising, or account is required.
+
+## Additional local utilities
+- File Manager search, rename and Recycle Bin for virtual files
+- Local Clipboard Manager for reusable text snippets
+- Secure random password generator using browser cryptography; generated passwords are not saved
+- Countdown timer and stopwatch with lap tracking
+
+All utility data remains in browser local storage where applicable. Clipboard copy uses the browser clipboard permission only after you select Copy. The media and PDF viewers open files locally and do not upload them.
