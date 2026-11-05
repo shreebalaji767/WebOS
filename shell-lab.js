@@ -1,0 +1,75 @@
+(()=> {
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const read=(k,d)=>{try{const v=localStorage.getItem('webos:'+k);return v===null?d:JSON.parse(v)}catch{return d}};
+const write=(k,v)=>{try{localStorage.setItem('webos:'+k,JSON.stringify(v));return true}catch{return false}};
+const shells=['bash','zsh','powershell'];
+const configs={bash:{label:'Bash',prompt:'user@webos',home:'/home/user'},zsh:{label:'Zsh',prompt:'user@webos',home:'/home/user'},powershell:{label:'PowerShell',prompt:'PS C:\\Users\\LocalUser',home:'C:\\Users\\LocalUser'}};
+let shell='bash',cwd='',history=[],historyIndex=0,vars={};
+const base=['Desktop','Documents','Downloads','Pictures','Music','Videos'];
+function folders(){let f=read('pc-folders',base);return Array.isArray(f)?f:base}
+function files(){let f=read('files',[]);return Array.isArray(f)?f:[]}
+function norm(input){let raw=String(input||'').trim();if(!raw||raw==='~'||raw==='$HOME'||raw==='%USERPROFILE%')return '';if(shell==='powershell'){raw=raw.replace(/\\/g,'/');const home='C:/Users/LocalUser';if(/^([a-z]:)?\/?$/i.test(raw))return '';if(/^c:/i.test(raw))raw=raw.replace(/^c:/i,'');if(raw.startsWith('/Users/LocalUser'))raw=raw.slice('/Users/LocalUser'.length);if(raw.startsWith(home))raw=raw.slice(home.length);if(raw.startsWith('/'))raw=raw.slice(1)}else{raw=raw.replace(/^~(?=\/|$)/,'');if(raw.startsWith('/home/user'))raw=raw.slice('/home/user'.length);if(raw.startsWith('/'))raw=raw.slice(1)}
+const parts=(raw.startsWith('/')?raw.slice(1):cwd?cwd+'/'+raw:raw).split('/');const out=[];for(const p of parts){if(!p||p==='.')continue;if(p==='..')out.pop();else out.push(p)}return out.join('/')}
+function displayPath(p){if(shell==='powershell')return 'C:\\Users\\LocalUser'+(p?'\\'+p.replace(/\//g,'\\'):'');return (shell==='zsh'?'~':'/home/user')+(p?'/'+p:'')}
+function tokenize(s){const out=[];let cur='',q='',escNext=false;for(let i=0;i<s.length;i++){const c=s[i];if(escNext){cur+=c;escNext=false;continue}if(c==='\\'&&q!=="'"){escNext=true;continue}if(q){if(c===q)q='';else cur+=c;continue}if(c==='"'||c==="'"){q=c;continue}if(/\s/.test(c)){if(cur){out.push(cur);cur=''}}else cur+=c}if(cur)out.push(cur);return out}
+function fileIndex(path,name){return files().findIndex(f=>(f.path||'')===path&&f.name.toLowerCase()===name.toLowerCase())}
+function splitTarget(target){const p=norm(target);const parts=p.split('/');return {path:parts.length>1?parts.slice(0,-1).join('/'):'',name:parts[parts.length-1]||''}}
+function output(text){const line=document.createElement('div');line.className='shell-output-line';line.textContent=String(text);$('#shell-output').append(line);$('#shell-output').scrollTop=$('#shell-output').scrollHeight}
+function prompt(){return shell==='powershell'?displayPath(cwd)+' > ': (shell==='zsh'?'% ':'$ ')}
+function refreshPrompt(){const p=$('#shell-prompt');if(p)p.textContent=prompt()}
+function help(){if(shell==='powershell')return 'PowerShell commands: Get-ChildItem (ls, dir), Get-Location (pwd), Set-Location (cd), New-Item (ni), Get-Content (cat), Set-Content, Add-Content, Remove-Item (rm), Copy-Item (cp), Move-Item (mv), Test-Path, Resolve-Path, Get-Date, Get-Process, Get-Command, Get-History, Clear-Host, Write-Output, help.';return 'Commands: help, pwd, ls [-la], cd, mkdir, touch, cat, echo, grep, find, cp, mv, rm, restore, date, whoami, hostname, uname, history, which, clear, nano.'}
+function resolveFile(target){const x=splitTarget(target);const i=fileIndex(x.path,x.name);return i<0?null:{file:files()[i],index:i,path:x.path,name:x.name}}
+function execute(raw){const command=raw.trim();if(!command)return '';if(shell==='powershell'&&/^\$[A-Za-z_]\w*\s*=/.test(command)){const m=command.match(/^\$([A-Za-z_]\w*)\s*=\s*(.*)$/);vars[m[1]]=m[2].replace(/^["']|["']$/g,'');return ''}
+let tokens=tokenize(command),cmd=(tokens.shift()||'');const lower=cmd.toLowerCase(),args=tokens;
+const arg=()=>args.join(' '),need=()=>{if(!args.length)throw Error('A path or name is required.');return args[0]};
+const ensureFolder=p=>{if(!p)return true;return folders().includes(p)};
+const saveFiles=a=>{if(!write('files',a))throw Error('Local browser storage is full. Export files or remove some content.');};
+const saveFolders=a=>{if(!write('pc-folders',a))throw Error('Local browser storage is full.')};
+const makeFile=(target,content,append)=>{const x=splitTarget(target);if(!x.name)throw Error('Invalid file name.');if(!ensureFolder(x.path))throw Error('Directory does not exist: '+displayPath(x.path));const a=files(),i=fileIndex(x.path,x.name);if(i>=0){a[i].content=append?String(a[i].content||'')+content:content;a[i].updatedAt=new Date().toISOString()}else a.push({name:x.name,type:'Text file',content:content,path:x.path,updatedAt:new Date().toISOString()});saveFiles(a);return ''};
+const findFiles=()=>files().map((f,i)=>({...f,_i:i}));
+const isPS=shell==='powershell';
+const psMap={'gci':'ls','dir':'ls','get-childitem':'ls','gl':'pwd','get-location':'pwd','sl':'cd','set-location':'cd','ni':'mkdir','new-item':'new-item','gc':'cat','get-content':'cat','type':'cat','ri':'rm','remove-item':'rm','del':'rm','erase':'rm','ci':'cp','copy-item':'cp','copy':'cp','mi':'mv','move-item':'mv','cls':'clear','clear-host':'clear','write-output':'echo','write-host':'echo','get-date':'date','get-history':'history','get-command':'which'};
+if(isPS)cmd=psMap[lower]||lower;
+if(cmd==='help'||cmd==='man'){return help()}
+if(cmd==='clear'||cmd==='cls'){return {clear:true}}
+if(cmd==='pwd'){return displayPath(cwd)}
+if(cmd==='whoami'){return isPS?'LocalUser':'user'}
+if(cmd==='hostname'){return 'WEBOS-PC'}
+if(cmd==='uname'){return 'WebOS Virtual PC 1.0 browser-environment'}
+if(cmd==='date'){return new Date().toString()}
+if(cmd==='history'){return history.map((h,i)=>(i+1)+'  '+h).join('\n')||'No commands in history.'}
+if(cmd==='apps'||cmd==='Get-Process'.toLowerCase()){return isPS?'WebOS browser apps only: explorer, notepad, paint, calculator, browser, terminal':'WebOS apps: files, notes, paint, calculator, browser, calendar, terminal'}
+if(cmd==='which'||cmd==='get-command'){return args.map(a=>a+' is a WebOS virtual shell command').join('\n')||'Use which <command>.'}
+if(cmd==='cd'){const dest=norm(args[0]||'');if(dest&&!ensureFolder(dest))throw Error('No such directory: '+displayPath(dest));cwd=dest;refreshPrompt();return ''}
+if(cmd==='ls'||cmd==='dir'){let p=cwd;const target=args.find(a=>!a.startsWith('-'));if(target)p=norm(target);if(p&&!ensureFolder(p))throw Error('Cannot find path: '+displayPath(p));const dirs=folders().filter(f=>f.split('/').slice(0,-1).join('/')===p).map(f=>({name:f.split('/').pop(),kind:'Directory'}));const fs=findFiles().filter(f=>(f.path||'')===p).map(f=>({name:f.name,kind:'File',size:String((f.content||'').length)+' B'}));const rows=dirs.concat(fs);return rows.length?rows.map(x=>isPS?x.kind.padEnd(10)+' '+x.name:x.kind==='Directory'?x.name+'/':x.name).join('\n'):'(empty directory)'}
+if(cmd==='mkdir'||cmd==='new-item'){const name=need();let target=norm(name);if(isPS){const ti=args.findIndex(x=>x.toLowerCase()==='-itemtype');if(ti>=0&&args[ti+1]&&args[ti+1].toLowerCase()!=='directory')return makeFile(name,'',false)}if(!target)throw Error('Cannot create the root directory.');if(folders().includes(target))throw Error('Already exists: '+displayPath(target));const p=target.split('/').slice(0,-1).join('/');if(p&&!ensureFolder(p))throw Error('Parent directory does not exist.');saveFolders(folders().concat(target));return 'Directory created: '+displayPath(target)}
+if(cmd==='touch'){return makeFile(need(),'','')}
+if(cmd==='cat'){const x=resolveFile(need());if(!x)throw Error('File not found: '+args[0]);return String(x.file.content||'')}
+if(cmd==='echo'||cmd==='print'){const redirect=args.findIndex(a=>a==='>'||a==='>>');if(redirect>=0){const text=args.slice(0,redirect).join(' '),target=args[redirect+1];if(!target)throw Error('Missing output file.');return makeFile(target,text, args[redirect]==='>>')}return args.join(' ')}
+if(cmd==='set-content'||cmd==='add-content'||cmd==='out-file'){const target=args[0];if(!target)throw Error('Usage: Set-Content <path> <text>');return makeFile(target,args.slice(1).join(' '),cmd==='add-content'||cmd==='out-file'&&args.includes('-Append'))}
+if(cmd==='rm'){const target=need(),recursive=args.includes('-r')||args.includes('-Recurse');const p=norm(target);const x=resolveFile(target);if(x){const a=files();const trash=read('files-trash',[]);trash.push(a.splice(x.index,1)[0]);saveFiles(a);write('files-trash',trash);return 'Moved to Recycle Bin: '+target}if(folders().includes(p)){const descendants=folders().filter(f=>f===p||f.startsWith(p+'/'));const nested=files().filter(f=>(f.path||'')===p||(f.path||'').startsWith(p+'/'));if(!recursive&&(descendants.length>1||nested.length))throw Error('Directory is not empty. Use rm -r '+target);saveFolders(folders().filter(f=>!descendants.includes(f)));if(nested.length){const a=files().filter(f=>!nested.includes(f)),trash=read('files-trash',[]).concat(nested);saveFiles(a);write('files-trash',trash)}return 'Directory removed: '+target}throw Error('Path not found: '+target)}
+if(cmd==='restore'){const name=need(),trash=read('files-trash',[]),i=trash.findIndex(f=>f.name===name);if(i<0)throw Error('No matching item in Recycle Bin.');const f=trash.splice(i,1)[0];write('files-trash',trash);const a=files();a.push(f);saveFiles(a);return 'Restored '+name}
+if(cmd==='cp'||cmd==='mv'){if(args.length<2)throw Error('Usage: '+cmd+' <source> <destination>');const src=resolveFile(args[0]);if(!src)throw Error('Source file not found.');const dst=splitTarget(args[1]);if(!ensureFolder(dst.path))throw Error('Destination folder does not exist.');const a=files();if(cmd==='cp'){a.push({...src.file,name:dst.name||src.name,path:dst.path});saveFiles(a);return 'Copied '+src.name}else{a[src.index]={...src.file,name:dst.name||src.name,path:dst.path};saveFiles(a);return 'Moved '+src.name}}
+if(cmd==='find'){const term=args[0]||'';return findFiles().filter(f=>f.name.includes(term)||(f.content||'').includes(term)).map(f=>displayPath(f.path)+(f.path?'/':'')+f.name).join('\n')||'No matches.'}
+if(cmd==='grep'){const term=args[0],x=resolveFile(args[1]||'');if(!term||!x)throw Error('Usage: grep <text> <file>');return String(x.file.content||'').split('\n').filter(l=>l.includes(term)).join('\n')||'No matching lines.'}
+if(cmd==='test-path'||cmd==='test-path'.toLowerCase()){const p=norm(need());return String(ensureFolder(p)||!!resolveFile(args[0]))}
+if(cmd==='resolve-path'){const p=norm(need());if(!ensureFolder(p)&&!resolveFile(args[0]))throw Error('Path not found.');return displayPath(p)}
+if(cmd==='nano'||cmd==='notepad'){const target=need(),x=resolveFile(target),initial=x?String(x.file.content||''):'';const value=prompt('Edit '+target+' (saved to virtual disk)',initial);if(value!==null)return makeFile(target,value,false);return 'Edit cancelled.'}
+if(cmd==='uname'&&isPS)return 'Microsoft Windows 11 WebOS virtual environment';
+if(cmd==='exit'){return 'Shell session remains open. Close the Terminal window to exit.'}
+if(cmd==='alias'&&shell==='zsh')return 'Aliases: ll=ls -la, la=ls -a, ..=cd ..';
+throw Error('Command not found: '+tokensafe(cmd)+'. Type help for commands available in '+configs[shell].label+'.')}
+function tokensafe(s){return String(s).replace(/[<>]/g,'')}
+function renderShell(win){if(win.dataset.shellLab==='1')return;win.dataset.shellLab='1';const body=win.querySelector('.window-body');if(!body)return;
+body.innerHTML='<div class="shell-lab"><div class="shell-toolbar"><div class="shell-tabs" role="tablist" aria-label="Choose command shell">'+shells.map(s=>'<button role="tab" data-shell="'+s+'" aria-selected="'+(s===shell)+'">'+configs[s].label+'</button>').join('')+'</div><span class="shell-state">WEBOS VIRTUAL ENVIRONMENT</span><button class="action" data-shell-clear>Clear</button></div><div class="shell-subtitle">Independent command-line environments · Shared virtual PC files</div><div class="shell-screen" id="shell-screen"><div class="shell-banner">WebOS Terminal · Select Bash, Zsh or PowerShell. Type <b>help</b> to see commands.</div><div id="shell-output" aria-live="polite"></div><div class="shell-input-row"><span id="shell-prompt">$ </span><input id="shell-command" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Shell command" placeholder="Type a command…"></div></div><div class="shell-footer"><span>Local virtual disk</span><span>Host OS access: disabled</span></div></div>';
+const input=$('#shell-command');function choose(s){shell=s;cwd='';history=[];historyIndex=0;vars={};win.querySelectorAll('[data-shell]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.shell===shell)));$('#shell-output').innerHTML='';output(configs[shell].label+' shell started. Type help.');refreshPrompt();input.focus()}
+win.querySelectorAll('[data-shell]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.shell)));
+win.querySelector('[data-shell-clear]').onclick=()=>$('#shell-output').innerHTML='';
+function submit(){const raw=input.value;input.value='';if(!raw.trim())return;history.push(raw);historyIndex=history.length;output(prompt()+raw);try{const result=execute(raw);if(result&&result.clear)$('#shell-output').innerHTML='';else if(result)output(result)}catch(e){output((shell==='powershell'?'': 'webos: ')+e.message)}refreshPrompt();$('#shell-screen').scrollTop=$('#shell-screen').scrollHeight}
+input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submit()}else if(e.key==='ArrowUp'){e.preventDefault();historyIndex=Math.max(0,historyIndex-1);input.value=history[historyIndex]||''}else if(e.key==='ArrowDown'){e.preventDefault();historyIndex=Math.min(history.length,historyIndex+1);input.value=history[historyIndex]||''}else if(e.key==='Tab'){e.preventDefault();const partial=input.value.trim().split(/\s+/).pop().toLowerCase();const matches=files().map(f=>f.name).concat(folders().map(f=>f.split('/').pop())).filter(n=>n.toLowerCase().startsWith(partial));if(matches.length===1)input.value=input.value.slice(0,input.value.length-partial.length)+matches[0]}});
+input.focus();output('Virtual shell ready. Use help for supported commands.');}
+function init(){const host=$('#desktop');if(!host)return;const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1&&n.matches('.window[data-app="terminal"]'))renderShell(n)})));observer.observe(host,{childList:true});const existing=host.querySelector('.window[data-app="terminal"]');if(existing)renderShell(existing)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
