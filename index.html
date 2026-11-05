@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="WebOS is a modern, local-first desktop environment that runs in your browser.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>WebOS — Your browser desktop</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main id="desktop" aria-label="WebOS desktop">
+  <div class="desktop-top"><span class="brand-mark">W</span><span>WebOS</span><span class="desktop-hint">A little workspace, right in your browser.</span></div>
+  <div id="desktop-icons" class="desktop-icons"></div>
+  <div class="desktop-welcome"><div class="welcome-kicker">YOUR SPACE, YOUR WAY</div><h1>Good things<br>happen here.</h1><p>Open an app to get started.</p></div>
+</main>
+<nav class="taskbar" aria-label="Desktop taskbar">
+  <button id="launcher-toggle" class="launcher-button" aria-label="Open app launcher" title="Applications"><span class="launcher-glyph">▦</span></button>
+  <div id="task-items" class="task-items"></div>
+  <div class="system-tray"><button id="install-button" class="tray-button" hidden title="Install WebOS">↓</button><span class="tray-status" title="Local-first browser workspace">●</span><div class="tray-clock"><span id="clock-time"></span><small id="clock-date"></small></div></div>
+</nav>
+<section id="launcher" class="launcher panel" aria-label="Application launcher" hidden>
+  <div class="launcher-heading"><div><span class="eyebrow">WEBOS WORKSPACE</span><h2>Applications</h2></div><button class="icon-button" id="launcher-close" aria-label="Close launcher">×</button></div>
+  <label class="sr-only" for="app-search">Search applications</label><input id="app-search" class="search-field" type="search" placeholder="Search applications…" autocomplete="off">
+  <div id="app-grid" class="app-grid"></div>
+  <div class="launcher-foot"><span>Local-first · No account required</span><button id="about-open" class="text-button">About WebOS</button></div>
+</section>
+<div id="context-menu" class="context-menu" hidden>
+  <button data-context="new-note">＋ New note</button><button data-context="open-settings">⚙ Display settings</button><button data-context="refresh">↻ Refresh desktop</button>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input id="global-import" type="file" hidden>
+<script src="app.js" defer></script>
+</body>
+</html>
