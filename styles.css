@@ -40,3 +40,15 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 #shell-prompt{color:#8ed8a5;white-space:pre}
 #shell-command{flex:1;min-width:0;background:transparent;color:#fff;border:0;outline:0;font:inherit;padding:2px}
 .shell-footer{justify-content:space-between}
+
+
+/* Task Manager */
+.task-manager-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}
+.task-manager-summary .stat{min-width:0}
+.task-manager-list{display:flex;flex-direction:column;gap:7px;max-height:260px;overflow:auto}
+.task-manager-row{display:grid;grid-template-columns:minmax(110px,1fr) auto auto;align-items:center;gap:9px;padding:9px;border:1px solid var(--line);border-radius:10px;background:#ffffff08}
+.task-manager-app{font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.task-manager-status{font-size:10px;color:var(--muted)}
+.task-manager-row .row{gap:5px;flex-wrap:nowrap}
+.task-manager-row .action{padding:6px 8px;font-size:10px}
+@media(max-width:560px){.task-manager-row{grid-template-columns:1fr auto}.task-manager-row .row{grid-column:1/-1;justify-content:flex-end}.task-manager-row .action{flex:1}}
