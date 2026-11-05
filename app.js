@@ -17,6 +17,20 @@ let windows=new Map(),activeId=null,z=100,toastTimer,installEvent=null;
 function raiseWindow(el){if(!el)return;z=Math.max(z,100)+1;el.style.zIndex=String(z)}
 window.__webosRaiseWindow=raiseWindow;
 document.addEventListener('pointerdown',event=>{const el=event.target.closest('#desktop>.window');if(el)raiseWindow(el)},true);
+function fitOpenWindows(){
+ const mobile=innerWidth<=650, bottom=mobile?56:58, pad=mobile?4:8;
+ document.querySelectorAll('#desktop>.window').forEach(el=>{
+  if(el.classList.contains('maximized'))return;
+  if(mobile){el.style.left=pad+'px';el.style.top=pad+'px';el.style.width='';el.style.height='';return}
+  const rect=el.getBoundingClientRect(), maxW=Math.max(240,innerWidth-2*pad), maxH=Math.max(180,innerHeight-bottom-2*pad);
+  const width=Math.min(rect.width,maxW),height=Math.min(rect.height,maxH);
+  el.style.width=width+'px';el.style.height=height+'px';
+  el.style.left=Math.max(pad,Math.min(rect.left,innerWidth-width-pad))+'px';
+  el.style.top=Math.max(pad,Math.min(rect.top,innerHeight-bottom-height-pad))+'px';
+ });
+}
+window.addEventListener('resize',fitOpenWindows,{passive:true});
+window.addEventListener('orientationchange',()=>requestAnimationFrame(fitOpenWindows),{passive:true});
 const escapeHTML=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function read(key,fallback){try{const x=localStorage.getItem('webos:'+key);return x===null?fallback:JSON.parse(x)}catch{return fallback}}
 function write(key,value){try{localStorage.setItem('webos:'+key,JSON.stringify(value));return true}catch{notify('Browser storage is full. Export a backup or remove old files.');return false}}
