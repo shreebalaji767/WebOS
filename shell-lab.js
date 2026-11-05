@@ -19,8 +19,8 @@ function output(text){const line=document.createElement('div');line.className='s
 function shellPrompt(){return shell==='powershell'?displayPath(cwd)+' > ': (shell==='zsh'?'% ':'$ ')}
 function refreshPrompt(){const p=$('#shell-prompt');if(p)p.textContent=shellPrompt()}
 function help(){if(shell==='powershell')return 'PowerShell: Get-ChildItem, Get-Location, Set-Location, New-Item, Get-Content, Set-Content, Add-Content, Remove-Item, Copy-Item, Move-Item, Test-Path, Resolve-Path, Get-Date, Get-Process, Get-Command, Get-History, Write-Output. Use commands for the full catalogue; Get-Help <name> for help; practice beginner|intermediate|advanced to train.';return 'Use commands for the full '+configs[shell].label+' catalogue; man <command> for a manual; practice beginner|intermediate|advanced for guided exercises; hint and check to progress. Core commands: pwd, ls, cd, mkdir, touch, cat, echo, grep, find, cp, mv, rm, history, clear.'}
-function resolveFile(target){const x=splitTarget(target);const i=fileIndex(x.path,x.name);return i<0?null:{file:files()[i],index:i,path:x.path,name:x.name}}
-function execute(raw){const command=raw.trim();if(!command)return '';if(shell==='powershell'&&/^\$[A-Za-z_]\w*\s*=/.test(command)){const m=command.match(/^\$([A-Za-z_]\w*)\s*=\s*(.*)$/);vars[m[1]]=m[2].replace(/^["']|["']$/g,'');return ''}
+function resolveFile(target){if(String(target)==='-'&&stdinBuffer!==null)return {file:{name:'stdin',content:stdinBuffer},index:-1,path:'',name:'stdin'};const x=splitTarget(target);const i=fileIndex(x.path,x.name);return i<0?null:{file:files()[i],index:i,path:x.path,name:x.name}}
+function executeSingle(raw){const command=raw.trim();if(!command)return '';if(shell==='powershell'&&/^\$[A-Za-z_]\w*\s*=/.test(command)){const m=command.match(/^\$([A-Za-z_]\w*)\s*=\s*(.*)$/);vars[m[1]]=m[2].replace(/^["']|["']$/g,'');return ''}
 let tokens=tokenize(command),cmd=(tokens.shift()||'');const lower=cmd.toLowerCase(),args=tokens;
 const arg=()=>args.join(' '),need=()=>{if(!args.length)throw Error('A path or name is required.');return args[0]},psValue=(flag,fallback)=>{if(!isPS)return args[fallback||0];const i=args.findIndex(a=>a.toLowerCase()===flag.toLowerCase());return i>=0?args[i+1]:args[fallback||0]};
 const ensureFolder=p=>{if(!p)return true;return folders().includes(p)};
@@ -60,6 +60,34 @@ if(cmd==='uname'&&isPS)return 'Microsoft Windows 11 WebOS virtual environment';
 if(cmd==='exit'){return 'Shell session remains open. Close the Terminal window to exit.'}
 if(cmd==='alias'&&shell==='zsh')return 'Aliases: ll=ls -la, la=ls -a, ..=cd ..';
 const extra=extraCommand(cmd,args,command);if(extra!==null)return extra;throw Error('Command not found: '+tokensafe(cmd)+'. Type help for commands available in '+configs[shell].label+'.')}
+let stdinBuffer=null;
+function splitShellSegments(source,operators){
+ const out=[];let quote="",escape=false,start=0;
+ for(let i=0;i<source.length;i++){const c=source[i];if(escape){escape=false;continue}if(c==="\\"&&quote!=="'"){escape=true;continue}if(quote){if(c===quote)quote="";continue}if(c==="'"||c==='"'){quote=c;continue}
+  const op=operators.find(x=>source.startsWith(x,i));if(op){out.push({text:source.slice(start,i).trim(),op});i+=op.length-1;start=i+1;}
+ }out.push({text:source.slice(start).trim(),op:null});return out.filter(x=>x.text);
+}
+function execute(raw){
+ const segments=splitShellSegments(String(raw||""),["&&","||",";"]);
+ let result="",lastCode=0;
+ for(const segment of segments){
+  if(segment.op==="&&"&&lastCode!==0)continue;
+  if(segment.op==="||"&&lastCode===0)continue;
+  const pipeline=splitShellSegments(segment.text,["|"]);let pipeValue=stdinBuffer;
+  for(let i=0;i<pipeline.length;i++){
+   stdinBuffer=i?pipeValue:null;
+   const part=pipeline[i].text;
+   const redir=splitShellSegments(part,[">>",">"]);
+   let command=redir[0]?.text||part;
+   const value=executeSingle(command);
+   pipeValue=value&&typeof value==="object"?"":String(value??"");
+   if(redir.length>1){const target=redir[1].text.trim().split(/\s+/)[0];if(!target)throw Error("Redirection target missing.");makeFile(target,pipeValue,redir[0].op===">>");}
+   if(i===pipeline.length-1)result=value;
+  }
+  lastCode=0;
+ }
+ stdinBuffer=null;return result;
+}
 function tokensafe(s){return String(s).replace(/[<>]/g,'')}
 
 const commandCatalog={
@@ -135,12 +163,12 @@ if(cmd==='check')return checkPractice();
 if(cmd==='man'||cmd==='help'&&a.length){const name=(cmd==='man'?a[0]:a[0]).toLowerCase();return commandDescriptions[name]||'No detailed manual for '+name+'. Use commands to browse the catalogue.'}
 if(cmd==='tree'){const root=norm(first||'');if(root&&!ensureFolder(root))throw Error('Directory not found.');const rows=[];folders().filter(p=>!root||p===root||p.startsWith(root+'/')).forEach(p=>rows.push(p+'/'));files().filter(f=>!root||(f.path||'')===root||(f.path||'').startsWith(root+'/')).forEach(f=>rows.push((f.path?f.path+'/':'')+f.name));return rows.join('\n')||'(empty)'}
 if(cmd==='rmdir'){const p=norm(first||'');if(!p||!folders().includes(p))throw Error('Directory not found.');if(folders().some(x=>x.startsWith(p+'/'))||files().some(x=>(x.path||'')===p))throw Error('Directory is not empty.');saveFolders(folders().filter(x=>x!==p));return 'Removed directory '+p}
-if(cmd==='head'||cmd==='tail'||cmd==='nl'||cmd==='less'||cmd==='more'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\n');if(cmd==='head')lines=lines.slice(0,Number(a[1])||10);if(cmd==='tail')lines=lines.slice(-(Number(a[1])||10));if(cmd==='nl')lines=lines.map((x,i)=>(i+1)+'  '+x);return lines.join('\n')}
-if(cmd==='wc'){if(!file)throw Error('Usage: wc <file>');const t=String(file.file.content||'');return t.split('\n').length+' lines  '+(t.trim()?t.trim().split(/\s+/).length:0)+' words  '+t.length+' characters'}
+if(cmd==='head'||cmd==='tail'||cmd==='nl'||cmd==='less'||cmd==='more'){if(!file&&stdinBuffer===null)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\n');if(cmd==='head')lines=lines.slice(0,Number(a[1])||10);if(cmd==='tail')lines=lines.slice(-(Number(a[1])||10));if(cmd==='nl')lines=lines.map((x,i)=>(i+1)+'  '+x);return lines.join('\n')}
+if(cmd==='wc'){if(!file&&stdinBuffer===null)throw Error('Usage: wc <file>');const t=String(file?file.file.content:stdinBuffer||'');return t.split('\n').length+' lines  '+(t.trim()?t.trim().split(/\s+/).length:0)+' words  '+t.length+' characters'}
 if(cmd==='printf')return a.join(' ').replace(/\\n/g,'\n').replace(/%s/g,()=>a.shift()||'');
 if(cmd==='seq'){let start=1,end=Number(a[0]),step=1;if(a.length>1){start=Number(a[0]);end=Number(a[1])}if(a.length>2)step=Number(a[2]);if(!Number.isFinite(end)||!step||Math.abs(end-start)>1000)throw Error('Usage: seq [start] end [step] (maximum 1001 values)');const out=[];for(let n=start;step>0?n<=end:n>=end;n+=step)out.push(n);return out.join('\n')}
-if(cmd==='sort'||cmd==='uniq'||cmd==='tac'||cmd==='rev'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\n');if(cmd==='sort')lines.sort((x,y)=>x.localeCompare(y));if(cmd==='uniq')lines=lines.filter((x,i)=>i===0||x!==lines[i-1]);if(cmd==='tac')lines.reverse();if(cmd==='rev')lines=lines.map(x=>[...x].reverse().join(''));return lines.join('\n')}
-if(cmd==='cut'||cmd==='tr'){if(!file)throw Error('Usage: '+cmd+' <file>');const t=String(file.file.content||'');if(cmd==='tr')return t.split(a[0]||'').join(a[1]||'');return t.split('\n').map(x=>x.split(a[1]||',')[Math.max(0,(Number((a[0]||'-f1').replace(/^-f/,''))||1)-1)]||'').join('\n')}
+if(cmd==='sort'||cmd==='uniq'||cmd==='tac'||cmd==='rev'){if(!file&&stdinBuffer===null)throw Error('Usage: '+cmd+' <file>');let lines=String(file?file.file.content:stdinBuffer||'').split('\n');if(cmd==='sort')lines.sort((x,y)=>x.localeCompare(y));if(cmd==='uniq')lines=lines.filter((x,i)=>i===0||x!==lines[i-1]);if(cmd==='tac')lines.reverse();if(cmd==='rev')lines=lines.map(x=>[...x].reverse().join(''));return lines.join('\n')}
+if(cmd==='cut'||cmd==='tr'){if(!file&&stdinBuffer===null)throw Error('Usage: '+cmd+' <file>');const t=String(file?file.file.content:stdinBuffer||'');if(cmd==='tr')return t.split(a[0]||'').join(a[1]||'');return t.split('\n').map(x=>x.split(a[1]||',')[Math.max(0,(Number((a[0]||'-f1').replace(/^-f/,''))||1)-1)]||'').join('\n')}
 if(cmd==='diff'||cmd==='comm'){const x=resolveFile(a[0]||''),y=resolveFile(a[1]||'');if(!x||!y)throw Error('Usage: '+cmd+' <file1> <file2>');return String(x.file.content||'')===String(y.file.content||'')?'Files are identical.':'Files differ.\n'+(cmd==='diff'?'--- '+a[0]+'\n+++ '+a[1]:'Compare each file with cat.')}
 if(cmd==='tee'){if(!first)throw Error('Usage: tee <file>');return makeFile(first,a.slice(1).join(' '),false)}
 if(cmd==='basename')return (first||'').split('/').pop()||'';
@@ -167,7 +195,7 @@ if(cmd==='chmod'||cmd==='chown'||cmd==='chgrp'||cmd==='umask')return 'Permission
 if(cmd==='tar'||cmd==='gzip'||cmd==='gunzip'||cmd==='zip'||cmd==='unzip'||cmd==='compress-archive'||cmd==='expand-archive')return 'Archive operation simulated: use File Manager JSON export for a real backup of WebOS data.';
 if(cmd==='curl'||cmd==='wget'||cmd==='invoke-webrequest'||cmd==='invoke-restmethod'||cmd==='ping'||cmd==='test-connection'||cmd==='ssh'||cmd==='scp')return 'Network access is intentionally disabled in the virtual shell.';
 if(cmd==='git')return 'Git is not installed in this browser simulator. Use GitHub in the Web Browser app.';
-if(['python','node','npm','make','xargs','awk','sed','paste','expr','sleep','start-process','get-service','stop-process','get-computerinfo','get-ciminstance','get-member','get-random','get-date','get-process','get-childitem','get-location','set-location','new-item','get-content','set-content','add-content','remove-item','copy-item','move-item','rename-item','get-item','clear-content','test-path','resolve-path','join-path','split-path','where-object','foreach-object','select-object','sort-object','group-object','measure-object','compare-object','format-table','format-list','out-file','tee-object','convertto-json','convertfrom-json','export-csv','import-csv','select-string','get-variable','new-variable','get-alias','set-alias','get-help','invoke-history','clear-history','write-error','read-host','get-uptime','resolve-dnsname','test-netconnection','compress-archive','expand-archive','get-filehash','get-acl','set-acl','get-authenticodesignature','autoload','bindkey','compinit','functions','fc','setopt','unsetopt','zmodload','rehash','pushd','popd','dirs','ln','locate','whereis','egrep','comm','sha256sum'].includes(cmd))return 'This command is listed for learning, but its full OS behavior is not available in the safe browser simulator. Use help and practice for supported hands-on commands.';
+
 
 // Broad safe command coverage: virtual filesystem operations are real within WebOS;
 // host administration, network, package and hardware operations return explicit simulations.
@@ -247,6 +275,7 @@ if(cmd==="get-random")return String(Math.floor(Math.random()*100)+1);
 if(cmd==="resolve-dnsname"||cmd==="test-netconnection"||cmd==="test-connection")return "Connectivity test simulated; external network access is disabled.";
 if(cmd==="get-itemproperty"||cmd==="set-itemproperty"||cmd==="remove-itemproperty"||cmd==="get-scheduledtask"||cmd==="register-scheduledtask"||cmd==="start-service"||cmd==="stop-service"||cmd==="restart-service"||cmd==="get-eventlog"||cmd==="get-winevent")return "PowerShell system cmdlet recognized. Changes to host registry, services, event logs and scheduled tasks are blocked.";
 if(cmd==="get-command"||cmd==="get-help")return "PowerShell help is virtual. Use commands or Get-Help <cmdlet>.";
+if(['python','node','npm','make','xargs','awk','sed','paste','expr','sleep','start-process','get-service','stop-process','get-computerinfo','get-ciminstance','get-member','get-random','get-date','get-process','get-childitem','get-location','set-location','new-item','get-content','set-content','add-content','remove-item','copy-item','move-item','rename-item','get-item','clear-content','test-path','resolve-path','join-path','split-path','where-object','foreach-object','select-object','sort-object','group-object','measure-object','compare-object','format-table','format-list','out-file','tee-object','convertto-json','convertfrom-json','export-csv','import-csv','select-string','get-variable','new-variable','get-alias','set-alias','get-help','invoke-history','clear-history','write-error','read-host','get-uptime','resolve-dnsname','test-netconnection','compress-archive','expand-archive','get-filehash','get-acl','set-acl','get-authenticodesignature','autoload','bindkey','compinit','functions','fc','setopt','unsetopt','zmodload','rehash','pushd','popd','dirs','ln','locate','whereis','egrep','comm','sha256sum'].includes(cmd))return 'This command is listed for learning, but its full OS behavior is not available in the safe browser simulator. Use help and practice for supported hands-on commands.';
 return null;
 }
 function renderShell(win){if(win.dataset.shellLab==='1')return;win.dataset.shellLab='1';const body=win.querySelector('.window-body');if(!body)return;
