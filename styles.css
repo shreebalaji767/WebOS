@@ -60,3 +60,28 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
 .shell-lab{min-width:0}
 .shell-screen{overscroll-behavior:contain}
 .shell-tabs button:focus-visible,#shell-command:focus-visible{outline:2px solid #80b5ff;outline-offset:2px}
+
+/* Code Studio workspace */
+.code-studio{display:flex;flex-direction:column;gap:9px;min-height:0;height:100%;color:var(--ink)}
+.code-studio-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.code-studio-top h2{margin:0 0 3px}.code-studio-top .muted{margin:0;font-size:11px}
+.code-project-actions,.code-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.code-project-actions .field{width:130px;min-width:90px;margin:0}.code-project-actions select{max-width:150px}
+.code-toolbar{padding:7px;border:1px solid var(--line);border-radius:10px;background:#ffffff06}.code-toolbar .action{font-size:11px;padding:7px 9px}
+.code-studio-layout{display:grid;grid-template-columns:155px minmax(240px,1fr) minmax(240px,1fr);gap:8px;flex:1;min-height:360px}
+.code-file-panel,.code-editor-panel,.code-preview-panel{min-width:0;min-height:0;border:1px solid var(--line);border-radius:10px;background:#ffffff05;overflow:hidden}
+.code-file-panel{display:flex;flex-direction:column}.code-panel-heading,.code-editor-heading,.code-preview-heading,.code-console-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:.04em}
+.code-file-list{display:flex;flex-direction:column;gap:3px;padding:6px;overflow:auto}.code-file-row{display:flex;align-items:center;gap:3px;border-radius:7px}.code-file-row.active{background:#5579d51c}
+.code-file-select{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:transparent;border:0;color:var(--ink);padding:8px 6px;font:11px ui-monospace,monospace;cursor:pointer}
+.code-file-remove{border:0;background:transparent;color:var(--muted);padding:5px 8px;cursor:pointer}.code-file-hint{margin-top:auto;padding:8px;color:var(--muted);font-size:10px;border-top:1px solid var(--line)}
+.code-editor-panel{display:flex;flex-direction:column}.code-editor-heading{background:#ffffff06}.code-editor-heading span:last-child,.code-preview-heading span{font-weight:500;color:var(--muted);font-size:10px}
+.code-editor.code-editor{box-sizing:border-box;flex:1;width:100%;height:auto;min-height:250px;resize:none!important;border:0;border-radius:0;margin:0;background:#0b1422;color:#e5edf9;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2;white-space:pre;overflow:auto}
+.code-status{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:6px 8px;background:#ffffff06;border-top:1px solid var(--line);color:var(--muted);font-size:9px}
+.code-preview-panel{display:flex;flex-direction:column}.code-frame{flex:1;height:auto;min-height:200px;border:0;border-radius:0}
+.code-console{height:125px;min-height:80px;display:flex;flex-direction:column;border-top:1px solid var(--line);background:#0b1422;color:#d6e4f7}
+.code-console-head{padding:6px 9px;color:#c9d7e8}.code-console-head .action{font-size:9px;padding:4px 7px}
+#code-console-output{margin:0;padding:7px 9px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.5 ui-monospace,monospace}
+.code-console-line{padding:1px 0}.code-console-line.error{color:#ff9b9b}
+.code-bottom-tools{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:9px}
+@media(max-width:850px){.code-studio-layout{grid-template-columns:125px minmax(220px,1fr);grid-template-rows:minmax(280px,1fr) minmax(260px,.8fr)}.code-preview-panel{grid-column:1/-1;min-height:260px}.code-file-panel{grid-row:1}.code-project-actions .field{width:105px}}
+@media(max-width:560px){.code-studio-layout{grid-template-columns:1fr;grid-template-rows:auto minmax(300px,1fr) minmax(320px,1fr);min-height:850px}.code-file-panel{grid-row:auto;max-height:125px}.code-file-list{flex-direction:row;flex-wrap:wrap}.code-file-row{max-width:170px}.code-preview-panel{grid-column:auto}.code-editor.code-editor{min-height:260px}.code-project-actions{width:100%}.code-project-actions select{flex:1;max-width:none}.code-project-actions .field{flex:1}.code-toolbar .action{flex:1}.code-bottom-tools{display:block}}
