@@ -73,7 +73,7 @@ style.textContent=`
 document.head.append(style);
 function addDesktopShortcuts(){
  const host=$('#desktop-icons');if(!host||host.dataset.pcReady)return;host.dataset.pcReady='1';
- const extras=[['files','🖥️','This PC'],['files','🗑️','Recycle Bin'],['browser','🌐','Browser'],['notes','📝','Notepad'],['paint','🎨','Paint'],['settings','⚙️','Settings']];
+ const extras=[['files','🖥️','This PC'],['bin','🗑️','Recycle Bin'],['browser','🌐','Browser'],['notes','📝','Notepad'],['paint','🎨','Paint'],['settings','⚙️','Settings']];
  host.innerHTML=extras.map((a,i)=>'<button class="desktop-icon" data-pc-shortcut="'+a[0]+'" data-shortcut-index="'+i+'"><span class="app-icon">'+a[1]+'</span><span>'+a[2]+'</span></button>').join('');
  host.addEventListener('click',e=>{const b=e.target.closest('[data-pc-shortcut]');if(!b)return;host.querySelectorAll('.desktop-icon').forEach(x=>x.classList.toggle('selected',x===b));});
  host.addEventListener('dblclick',e=>{const b=e.target.closest('[data-pc-shortcut]');if(b){e.preventDefault();launch(b.dataset.pcShortcut)}});
@@ -105,7 +105,7 @@ function init(){
  $('#launcher-close')?.addEventListener('click',()=>start?.setAttribute('aria-expanded','false'));
  document.addEventListener('click',e=>{if(!e.target.closest('#launcher')&&!e.target.closest('#launcher-toggle'))start?.setAttribute('aria-expanded','false')});
  document.addEventListener('keydown',e=>{
-  if(e.key==='Meta'||(e.metaKey&&e.key===' ')){e.preventDefault();$('#launcher-toggle')?.click()}
+  if(e.key==='Meta'&&!e.repeat){e.preventDefault();$('#launcher-toggle')?.click()}
   if(e.metaKey&&e.key.toLowerCase()==='e'){e.preventDefault();launch('files')}
   if(e.metaKey&&e.key.toLowerCase()==='r'){e.preventDefault();showRun()}
   if(e.key==='Escape'){$('#pc-run-dialog')&&($('#pc-run-dialog').hidden=true);$('#pc-power-dialog')&&($('#pc-power-dialog').hidden=true)}
