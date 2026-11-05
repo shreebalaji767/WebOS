@@ -116,9 +116,9 @@ advanced:[
 ["Verify the backup","diff workspace/logs/app.log workspace/archive/app-backup.log","Compare both files."]
 ]};
 let activeLesson=null,lessonIndex=0;
-function listCommands(){return Object.entries(commandCatalog[shell]).map(([group,items])=>group+": "+items.join(", ")).join("\\n")}
-function runPractice(level){const key=(level||'beginner').toLowerCase();if(!lessons[key])return 'Choose a level: practice beginner, practice intermediate, or practice advanced.';activeLesson=key;lessonIndex=0;return key.toUpperCase()+' PRACTICE · '+lessons[key].length+' exercises\\n1. '+lessons[key][0][0]+'\\nCommand goal: '+lessons[key][0][1]+'\\nType hint for a clue, or check when you have completed it.'}
-function checkPractice(){if(!activeLesson)return 'Start with: practice beginner';const lesson=lessons[activeLesson][lessonIndex];if(!lesson)return 'All exercises completed! Start another level with practice beginner/intermediate/advanced.';const needed=lesson[1].split(';').map(x=>x.trim().split(/\\s+/)[0]);const recent=history.slice(-8).join(' ').toLowerCase();const ok=needed.every(n=>recent.includes(n.toLowerCase()));if(!ok)return 'Not quite yet. Review the task and try again. Hint: '+lesson[2];lessonIndex++;if(lessonIndex>=lessons[activeLesson].length)return 'Excellent! '+activeLesson+' practice completed. Start another level whenever you are ready.';const next=lessons[activeLesson][lessonIndex];return 'Correct! Next exercise ('+(lessonIndex+1)+'/'+lessons[activeLesson].length+'): '+next[0]+'\\nGoal: '+next[1]+'\\nType hint for a clue.'}
+function listCommands(){return Object.entries(commandCatalog[shell]).map(([group,items])=>group+": "+items.join(", ")).join("\n")}
+function runPractice(level){const key=(level||'beginner').toLowerCase();if(!lessons[key])return 'Choose a level: practice beginner, practice intermediate, or practice advanced.';activeLesson=key;lessonIndex=0;return key.toUpperCase()+' PRACTICE · '+lessons[key].length+' exercises\n1. '+lessons[key][0][0]+'\nCommand goal: '+lessons[key][0][1]+'\nType hint for a clue, or check when you have completed it.'}
+function checkPractice(){if(!activeLesson)return 'Start with: practice beginner';const lesson=lessons[activeLesson][lessonIndex];if(!lesson)return 'All exercises completed! Start another level with practice beginner/intermediate/advanced.';const needed=lesson[1].split(';').map(x=>x.trim().split(/\s+/)[0]);const recent=history.slice(-8).join(' ').toLowerCase();const ok=needed.every(n=>recent.includes(n.toLowerCase()));if(!ok)return 'Not quite yet. Review the task and try again. Hint: '+lesson[2];lessonIndex++;if(lessonIndex>=lessons[activeLesson].length)return 'Excellent! '+activeLesson+' practice completed. Start another level whenever you are ready.';const next=lessons[activeLesson][lessonIndex];return 'Correct! Next exercise ('+(lessonIndex+1)+'/'+lessons[activeLesson].length+'): '+next[0]+'\nGoal: '+next[1]+'\nType hint for a clue.'}
 function practiceHint(){if(!activeLesson)return 'Start with: practice beginner';const l=lessons[activeLesson][lessonIndex];return l?'Hint: '+l[2]:'No active exercise.'}
 function extraCommand(cmd,args,raw){
 const a=args,first=a[0],file=first?resolveFile(first):null;
@@ -127,34 +127,34 @@ if(cmd==='practice')return runPractice(a[0]);
 if(cmd==='hint')return practiceHint();
 if(cmd==='check')return checkPractice();
 if(cmd==='man'||cmd==='help'&&a.length){const name=(cmd==='man'?a[0]:a[0]).toLowerCase();return commandDescriptions[name]||'No detailed manual for '+name+'. Use commands to browse the catalogue.'}
-if(cmd==='tree'){const root=norm(first||'');if(root&&!ensureFolder(root))throw Error('Directory not found.');const rows=[];folders().filter(p=>!root||p===root||p.startsWith(root+'/')).forEach(p=>rows.push(p+'/'));files().filter(f=>!root||(f.path||'')===root||(f.path||'').startsWith(root+'/')).forEach(f=>rows.push((f.path?f.path+'/':'')+f.name));return rows.join('\\n')||'(empty)'}
+if(cmd==='tree'){const root=norm(first||'');if(root&&!ensureFolder(root))throw Error('Directory not found.');const rows=[];folders().filter(p=>!root||p===root||p.startsWith(root+'/')).forEach(p=>rows.push(p+'/'));files().filter(f=>!root||(f.path||'')===root||(f.path||'').startsWith(root+'/')).forEach(f=>rows.push((f.path?f.path+'/':'')+f.name));return rows.join('\n')||'(empty)'}
 if(cmd==='rmdir'){const p=norm(first||'');if(!p||!folders().includes(p))throw Error('Directory not found.');if(folders().some(x=>x.startsWith(p+'/'))||files().some(x=>(x.path||'')===p))throw Error('Directory is not empty.');saveFolders(folders().filter(x=>x!==p));return 'Removed directory '+p}
-if(cmd==='head'||cmd==='tail'||cmd==='nl'||cmd==='less'||cmd==='more'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\\n');if(cmd==='head')lines=lines.slice(0,Number(a[1])||10);if(cmd==='tail')lines=lines.slice(-(Number(a[1])||10));if(cmd==='nl')lines=lines.map((x,i)=>(i+1)+'  '+x);return lines.join('\\n')}
-if(cmd==='wc'){if(!file)throw Error('Usage: wc <file>');const t=String(file.file.content||'');return t.split('\\n').length+' lines  '+(t.trim()?t.trim().split(/\\s+/).length:0)+' words  '+t.length+' characters'}
-if(cmd==='printf')return a.join(' ').replace(/\\\\n/g,'\\n').replace(/%s/g,()=>a.shift()||'');
-if(cmd==='seq'){let start=1,end=Number(a[0]),step=1;if(a.length>1){start=Number(a[0]);end=Number(a[1])}if(a.length>2)step=Number(a[2]);if(!Number.isFinite(end)||!step||Math.abs(end-start)>1000)throw Error('Usage: seq [start] end [step] (maximum 1001 values)');const out=[];for(let n=start;step>0?n<=end:n>=end;n+=step)out.push(n);return out.join('\\n')}
-if(cmd==='sort'||cmd==='uniq'||cmd==='tac'||cmd==='rev'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\\n');if(cmd==='sort')lines.sort((x,y)=>x.localeCompare(y));if(cmd==='uniq')lines=lines.filter((x,i)=>i===0||x!==lines[i-1]);if(cmd==='tac')lines.reverse();if(cmd==='rev')lines=lines.map(x=>[...x].reverse().join(''));return lines.join('\\n')}
-if(cmd==='cut'||cmd==='tr'){if(!file)throw Error('Usage: '+cmd+' <file>');const t=String(file.file.content||'');if(cmd==='tr')return t.split(a[0]||'').join(a[1]||'');return t.split('\\n').map(x=>x.split(a[1]||',')[Math.max(0,(Number((a[0]||'-f1').replace(/^-f/,''))||1)-1)]||'').join('\\n')}
-if(cmd==='diff'||cmd==='comm'){const x=resolveFile(a[0]||''),y=resolveFile(a[1]||'');if(!x||!y)throw Error('Usage: '+cmd+' <file1> <file2>');return String(x.file.content||'')===String(y.file.content||'')?'Files are identical.':'Files differ.\\n'+(cmd==='diff'?'--- '+a[0]+'\\n+++ '+a[1]:'Compare each file with cat.')}
+if(cmd==='head'||cmd==='tail'||cmd==='nl'||cmd==='less'||cmd==='more'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\n');if(cmd==='head')lines=lines.slice(0,Number(a[1])||10);if(cmd==='tail')lines=lines.slice(-(Number(a[1])||10));if(cmd==='nl')lines=lines.map((x,i)=>(i+1)+'  '+x);return lines.join('\n')}
+if(cmd==='wc'){if(!file)throw Error('Usage: wc <file>');const t=String(file.file.content||'');return t.split('\n').length+' lines  '+(t.trim()?t.trim().split(/\s+/).length:0)+' words  '+t.length+' characters'}
+if(cmd==='printf')return a.join(' ').replace(/\\n/g,'\n').replace(/%s/g,()=>a.shift()||'');
+if(cmd==='seq'){let start=1,end=Number(a[0]),step=1;if(a.length>1){start=Number(a[0]);end=Number(a[1])}if(a.length>2)step=Number(a[2]);if(!Number.isFinite(end)||!step||Math.abs(end-start)>1000)throw Error('Usage: seq [start] end [step] (maximum 1001 values)');const out=[];for(let n=start;step>0?n<=end:n>=end;n+=step)out.push(n);return out.join('\n')}
+if(cmd==='sort'||cmd==='uniq'||cmd==='tac'||cmd==='rev'){if(!file)throw Error('Usage: '+cmd+' <file>');let lines=String(file.file.content||'').split('\n');if(cmd==='sort')lines.sort((x,y)=>x.localeCompare(y));if(cmd==='uniq')lines=lines.filter((x,i)=>i===0||x!==lines[i-1]);if(cmd==='tac')lines.reverse();if(cmd==='rev')lines=lines.map(x=>[...x].reverse().join(''));return lines.join('\n')}
+if(cmd==='cut'||cmd==='tr'){if(!file)throw Error('Usage: '+cmd+' <file>');const t=String(file.file.content||'');if(cmd==='tr')return t.split(a[0]||'').join(a[1]||'');return t.split('\n').map(x=>x.split(a[1]||',')[Math.max(0,(Number((a[0]||'-f1').replace(/^-f/,''))||1)-1)]||'').join('\n')}
+if(cmd==='diff'||cmd==='comm'){const x=resolveFile(a[0]||''),y=resolveFile(a[1]||'');if(!x||!y)throw Error('Usage: '+cmd+' <file1> <file2>');return String(x.file.content||'')===String(y.file.content||'')?'Files are identical.':'Files differ.\n'+(cmd==='diff'?'--- '+a[0]+'\n+++ '+a[1]:'Compare each file with cat.')}
 if(cmd==='tee'){if(!first)throw Error('Usage: tee <file>');return makeFile(first,a.slice(1).join(' '),false)}
 if(cmd==='basename')return (first||'').split('/').pop()||'';
 if(cmd==='dirname')return (first||'').split('/').slice(0,-1).join('/')||'.';
 if(cmd==='realpath'||cmd==='readlink')return displayPath(norm(first||''));
 if(cmd==='file')return file?'ASCII text (virtual file)':'No such virtual file.';
-if(cmd==='stat')return file?'File: '+file.file.name+'\\nSize: '+String(file.file.content||'').length+' bytes\\nModified: '+(file.file.updatedAt||'unknown'):'Path not found.';
+if(cmd==='stat')return file?'File: '+file.file.name+'\nSize: '+String(file.file.content||'').length+' bytes\nModified: '+(file.file.updatedAt||'unknown'):'Path not found.';
 if(cmd==='test'||cmd==='['){const target=a[a.length-1]||'';return String(!!resolveFile(target)||ensureFolder(norm(target)))}
 if(cmd==='true')return '';
 if(cmd==='false')throw Error('Command returned status 1 (simulated).');
 if(cmd==='cal')return 'Calendar view is available in the WebOS Calendar app.';
 if(cmd==='uptime')return 'WebOS virtual session active in this browser.';
 if(cmd==='id')return 'uid=1000(user) gid=1000(user) groups=1000(user) [simulated]';
-if(cmd==='ps'||cmd==='top'||cmd==='jobs')return 'PID  PROCESS\\n100  WebOS Desktop\\n101  Terminal (virtual)\\n102  Browser UI\\nNote: simulated WebOS processes only.';
+if(cmd==='ps'||cmd==='top'||cmd==='jobs')return 'PID  PROCESS\n100  WebOS Desktop\n101  Terminal (virtual)\n102  Browser UI\nNote: simulated WebOS processes only.';
 if(cmd==='kill'||cmd==='bg'||cmd==='fg')return 'Process job control is simulated; no host processes are affected.';
 if(cmd==='df'||cmd==='du'||cmd==='free')return 'Virtual browser storage only. Approximate WebOS file count: '+files().length+'; content bytes: '+files().reduce((n,f)=>n+String(f.content||'').length,0);
-if(cmd==='env'||cmd==='printenv'||cmd==='get-variable')return Object.entries({...vars,HOME:configs[shell].home,USER:'user',SHELL:shell,WEBOS:'1'}).map(([k,v])=>k+'='+v).join('\\n');
-if(cmd==='export'||cmd==='set-variable'||cmd==='set'){const m=raw.match(/(?:export|set-variable|set)\\s+([^=\\s]+)\\s*=\\s*(.*)/i);if(m){vars[m[1]]=m[2].replace(/^['"]|['"]$/g,'');return ''}return 'Usage: export NAME=value'}
+if(cmd==='env'||cmd==='printenv'||cmd==='get-variable')return Object.entries({...vars,HOME:configs[shell].home,USER:'user',SHELL:shell,WEBOS:'1'}).map(([k,v])=>k+'='+v).join('\n');
+if(cmd==='export'||cmd==='set-variable'||cmd==='set'){const m=raw.match(/(?:export|set-variable|set)\s+([^=\s]+)\s*=\s*(.*)/i);if(m){vars[m[1]]=m[2].replace(/^['"]|['"]$/g,'');return ''}return 'Usage: export NAME=value'}
 if(cmd==='unset'||cmd==='remove-variable'){delete vars[first];return ''}
-if(cmd==='alias')return 'Aliases: ll=ls -la, la=ls -a, ..=cd ..'+(a.length?'\\nAlias creation is not persisted.':'');
+if(cmd==='alias')return 'Aliases: ll=ls -la, la=ls -a, ..=cd ..'+(a.length?'\nAlias creation is not persisted.':'');
 if(cmd==='type'||cmd==='which'||cmd==='get-command')return first?first+' is a WebOS virtual command':'Use type <command>.';
 if(cmd==='clear'||cmd==='clear-host'||cmd==='cls')return {clear:true};
 if(cmd==='chmod'||cmd==='chown'||cmd==='chgrp'||cmd==='umask')return 'Permissions are illustrative only in the virtual filesystem.';
