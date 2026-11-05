@@ -14,6 +14,12 @@ A modern desktop-style workspace that runs entirely in the browser. Built with v
 - Dark/light appearance, wallpapers and JSON backup/restore
 - Installable PWA and offline app-shell cache
 - Responsive full-screen app windows on phones
+- Office Studio for local documents and CSV import/export
+- Code Studio with an isolated sandboxed HTML preview
+- Local audio/video player and PDF reader
+- Recycle Bin with restore and permanent deletion for Office Studio documents
+- Three virtual workspaces with keyboard switching
+- Window snapping for the added applications
 
 ## Deploy
 1. Open **Settings → Pages** in this repository.
