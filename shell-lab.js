@@ -88,6 +88,12 @@ powershell:{
 "Network & developer tools":["Test-Connection","Invoke-WebRequest","Invoke-RestMethod","Resolve-DnsName","Test-NetConnection","ssh","scp","git","node","npm"],
 "Archives & security":["Compress-Archive","Expand-Archive","Get-FileHash","Get-Acl","Set-Acl","Get-AuthenticodeSignature"]
 }};
+const sharedLinuxCommands=["tac","less","more","rmdir","file","stat","ln","readlink","locate","whereis","basename","dirname","realpath","chmod","chown","chgrp","umask","getfacl","setfacl","sudo","su","egrep","fgrep","sed","awk","cut","sort","uniq","wc","tr","paste","join","comm","strings","tee","xargs","column","fold","nl","killall","pkill","nohup","nice","renice","wait","timeout","ip","ifconfig","curl","wget","ssh","scp","sftp","netstat","ss","traceroute","tracepath","nslookup","dig","host","whois","nc","nmap","tcpdump","df","du","lsblk","blkid","mount","umount","fdisk","parted","mkfs","fsck","dd","sync","tar","gzip","gunzip","zip","unzip","bzip2","bunzip2","xz","unxz","zcat","7z","useradd","adduser","usermod","userdel","passwd","groupadd","groupdel","groupmod","groups","who","w","last","lastlog","apt","apt-get","apt-cache","dpkg","yum","dnf","rpm","pacman","zypper","snap","flatpak","systemctl","service","journalctl","dmesg","free","vmstat","iostat","lscpu","lsusb","lspci","reboot","shutdown","poweroff","timedatectl","crontab","at","read","export","unset","declare","local","readonly","let","eval","exec","source","return","break","continue","shift","shopt","trap","builtin","fc","select","until","test","expr","seq","true","false","env","printenv"];
+for(const key of ["bash","zsh"]) {
+  const target=commandCatalog[key];
+  target["Linux utilities & administration"]=sharedLinuxCommands;
+}
+commandCatalog.powershell["Additional PowerShell cmdlets"]=["Get-ItemProperty","Set-ItemProperty","Remove-ItemProperty","Get-ChildItem","Get-Location","Set-Location","Get-Content","Set-Content","Add-Content","Clear-Content","New-Item","Remove-Item","Copy-Item","Move-Item","Rename-Item","Get-Item","Test-Path","Resolve-Path","Join-Path","Split-Path","Get-FileHash","Get-Acl","Set-Acl","Get-Process","Stop-Process","Start-Process","Get-Service","Start-Service","Stop-Service","Restart-Service","Get-NetIPAddress","Get-NetIPConfiguration","Test-Connection","Resolve-DnsName","Get-ComputerInfo","Get-CimInstance","Get-EventLog","Get-WinEvent","Get-ScheduledTask","Register-ScheduledTask","Get-ExecutionPolicy","Set-ExecutionPolicy","Get-Module","Import-Module","Get-Command","Get-Help","Get-History","Get-Variable","Set-Variable","New-Variable","Remove-Variable","Get-Alias","Set-Alias","Export-Csv","Import-Csv","ConvertTo-Json","ConvertFrom-Json","Invoke-WebRequest","Invoke-RestMethod","Compress-Archive","Expand-Archive","Get-Random","Measure-Object","Where-Object","ForEach-Object","Select-Object","Sort-Object","Group-Object","Compare-Object","Format-Table","Format-List","Out-File","Tee-Object"];
 const commandDescriptions={
 pwd:"Print the current virtual working directory",ls:"List virtual files and folders",cd:"Change virtual directory",tree:"Display a directory tree",mkdir:"Create a directory",rmdir:"Remove an empty directory",touch:"Create an empty text file",cat:"Display a file",head:"Show the first lines of a file",tail:"Show the last lines of a file",wc:"Count lines, words and characters",grep:"Search text in a file",find:"Find virtual files by name or content",printf:"Print formatted text",seq:"Generate a number sequence",date:"Show the current date and time",history:"Show entered commands",env:"Show shell environment variables",export:"Set a shell variable",unset:"Remove a shell variable",ps:"List simulated WebOS processes",top:"Show simulated process summary",df:"Show virtual storage summary",du:"Estimate virtual file sizes",chmod:"Change simulated file permissions",tar:"Create or list a simulated archive",git:"Run supported local Git practice commands",help:"Show shell help",commands:"List the command catalogue",practice:"Show beginner, intermediate or advanced exercises",hint:"Show a hint for the current exercise",check:"Check the current practice exercise"};
 const lessons={
@@ -162,6 +168,87 @@ if(cmd==='tar'||cmd==='gzip'||cmd==='gunzip'||cmd==='zip'||cmd==='unzip'||cmd===
 if(cmd==='curl'||cmd==='wget'||cmd==='invoke-webrequest'||cmd==='invoke-restmethod'||cmd==='ping'||cmd==='test-connection'||cmd==='ssh'||cmd==='scp')return 'Network access is intentionally disabled in the virtual shell.';
 if(cmd==='git')return 'Git is not installed in this browser simulator. Use GitHub in the Web Browser app.';
 if(['python','node','npm','make','xargs','awk','sed','paste','expr','sleep','start-process','get-service','stop-process','get-computerinfo','get-ciminstance','get-member','get-random','get-date','get-process','get-childitem','get-location','set-location','new-item','get-content','set-content','add-content','remove-item','copy-item','move-item','rename-item','get-item','clear-content','test-path','resolve-path','join-path','split-path','where-object','foreach-object','select-object','sort-object','group-object','measure-object','compare-object','format-table','format-list','out-file','tee-object','convertto-json','convertfrom-json','export-csv','import-csv','select-string','get-variable','new-variable','get-alias','set-alias','get-help','invoke-history','clear-history','write-error','read-host','get-uptime','resolve-dnsname','test-netconnection','compress-archive','expand-archive','get-filehash','get-acl','set-acl','get-authenticodesignature','autoload','bindkey','compinit','functions','fc','setopt','unsetopt','zmodload','rehash','pushd','popd','dirs','ln','locate','whereis','egrep','comm','sha256sum'].includes(cmd))return 'This command is listed for learning, but its full OS behavior is not available in the safe browser simulator. Use help and practice for supported hands-on commands.';
+
+// Broad safe command coverage: virtual filesystem operations are real within WebOS;
+// host administration, network, package and hardware operations return explicit simulations.
+if(["locate","whereis"].includes(cmd)){
+  const q=(first||"").toLowerCase();const hits=files().filter(f=>f.name.toLowerCase().includes(q)).map(f=>displayPath(f.path)+(f.path?"/":"")+f.name);
+  return hits.length?hits.join("\n"):cmd+" : no matching virtual files or executable metadata.";
+}
+if(cmd==="strings"){if(!file)throw Error("Usage: strings <file>");return String(file.file.content||"").split(/[\r\n]+/).filter(Boolean).join("\n")}
+if(cmd==="column"){return a.join(" ").split("\\t").join("  ")}
+if(cmd==="fold"){const width=Number((a.find(x=>x.startsWith("-w"))||"").slice(2))||80;return a.slice(1).join(" ").replace(new RegExp("(.{"+width+"})","g"),"$1\n")}
+if(cmd==="paste"||cmd==="join"){
+ const x=resolveFile(a[0]||""),y=resolveFile(a[1]||"");
+ if(!x||!y)throw Error("Usage: "+cmd+" <file1> <file2>");
+ const left=String(x.file.content||"").split("\n"),right=String(y.file.content||"").split("\n");
+ return left.map((v,i)=>cmd==="paste"?v+"\t"+(right[i]||""):[v,right[i]||""].join(" ")).join("\n");
+}
+if(cmd==="sed"){
+ const target=a[a.length-1],x=resolveFile(target);if(!x)throw Error("Usage: sed 's/old/new/g' <file>");
+ const expr=a.slice(0,-1).join(" ").match(/^s([/|#])(.+?)\1(.*?)\1([g]?)$/);
+ if(!expr)throw Error("Supported sed form: sed 's/old/new/g' <file>");
+ const old=expr[2],replacement=expr[3],content=String(x.file.content||"");
+ return content.replace(new RegExp(old.replace(/[.*+?^{}()|[\]\\]/g,"\\return null;
+}
+function renderShell"),expr[4]?"g":"") ,replacement);
+}
+if(cmd==="awk"){
+ const target=a[a.length-1],x=resolveFile(target);if(!x)throw Error("Usage: awk '{print $1}' <file>");
+ const field=Number((a.join(" ").match(/\$([1-9])/ )||[])[1]||1)-1,sep=(a.join(" ").match(/-F\s*([^\s]+)/)||[])[1]||"\\s+";
+ return String(x.file.content||"").split("\n").map(line=>line.split(new RegExp(sep==="\\s+"?"\\s+":sep))[field]||"").join("\n");
+}
+if(cmd==="fgrep"||cmd==="egrep") {const x=resolveFile(a[a.length-1]||"");if(!x)throw Error("Usage: "+cmd+" <pattern> <file>");const pattern=a.slice(0,-1).join(" ");let re;try{re=new RegExp(pattern,cmd==="egrep"?"":"");}catch{re=null}return String(x.file.content||"").split("\n").filter(line=>re?re.test(line):line.includes(pattern)).join("\n")||"No matching lines."}
+if(cmd==="cut"&&a[0]==="-c"){const x=resolveFile(a[a.length-1]||"");if(!x)throw Error("Usage: cut -cN <file>");const n=Number(a[1]||1)-1;return String(x.file.content||"").split("\n").map(line=>line[n]||"").join("\n")}
+if(cmd==="ln"){const src=resolveFile(a[a.length-1]||"");if(!src)throw Error("Usage: ln <source> <link-name> (virtual text files only)");return "Symbolic/hard links are represented as references only; use cp to create an independent virtual copy."}
+if(["getfacl","setfacl","chmod","chown","chgrp","umask"].includes(cmd))return "Permission metadata simulated for the WebOS virtual filesystem; host ownership and ACLs are never changed.";
+if(["sudo","su"].includes(cmd))return "Privilege escalation is unavailable in WebOS. This virtual shell has no host administrator access.";
+if(["killall","pkill","kill","bg","fg","jobs","nohup","nice","renice","wait","timeout"].includes(cmd))return "Job-control result simulated. Only virtual WebOS tasks exist; no host processes are affected.";
+if(["ip","ifconfig","netstat","ss","traceroute","tracepath","nslookup","dig","host","whois","nc","nmap","tcpdump","ping","curl","wget","ssh","scp","sftp"].includes(cmd))return "Network command recognized. Live network access and packet capture are disabled in this offline-safe virtual shell.";
+if(["df","du","free","lsblk","blkid","mount","umount","fdisk","parted","mkfs","fsck","dd","sync"].includes(cmd))return "Storage command recognized. Virtual disk only: "+files().length+" files, "+folders().length+" folders. Physical disks, partitions and filesystems are inaccessible.";
+if(["gzip","gunzip","bzip2","bunzip2","xz","unxz","zcat","7z","zip","unzip","tar","compress-archive","expand-archive"].includes(cmd))return "Archive command recognized. Archive creation/extraction is simulated; use File Manager export to create a real WebOS JSON backup.";
+if(["useradd","adduser","usermod","userdel","passwd","groupadd","groupdel","groupmod"].includes(cmd))return "User/group management command recognized. WebOS uses one local virtual identity; system accounts and passwords cannot be changed.";
+if(["groups","who","w","last","lastlog"].includes(cmd))return cmd==="groups"?"user":cmd==="who"||cmd==="w"?"user  browser-session  WebOS virtual desktop":"No additional virtual login records.";
+if(["apt","apt-get","apt-cache","dpkg","yum","dnf","rpm","pacman","zypper","snap","flatpak"].includes(cmd))return "Package-manager command recognized ("+cmd+"). Installing or changing host software is disabled; this browser app has no operating-system package database.";
+if(["systemctl","service","journalctl","dmesg","vmstat","iostat","lscpu","lsusb","lspci","reboot","shutdown","poweroff","timedatectl","crontab","at"].includes(cmd))return "System administration command recognized ("+cmd+"). Displaying sample virtual-system information only; host services, hardware, clock, scheduler and power state are protected.";
+if(["apt","apt-get","apt-cache","dpkg","yum","dnf","rpm","pacman","zypper","snap","flatpak"].includes(cmd))return "Package operations are simulated; no software is installed.";
+if(["env","printenv"].includes(cmd))return Object.entries({...vars,HOME:configs[shell].home,USER:"user",SHELL:shell,PATH:"/usr/local/bin:/usr/bin:/bin",WEBOS:"1"}).map(([k,v])=>k+"="+v).join("\n");
+if(["declare","local","readonly","let"].includes(cmd)){
+ const m=raw.match(/(?:declare|local|readonly|let)\s+([A-Za-z_][\w]*)\s*(?:=|\s)\s*(.*)/);
+ if(!m)return Object.entries(vars).map(([k,v])=>k+"="+v).join("\n")||"No shell variables set.";
+ vars[m[1]]=String(m[2]||"").replace(/^['"]|['"]$/g,"");return "";
+}
+if(cmd==="read")return "Interactive stdin is not available in this simulator. Assign a practice value with NAME=value or use PowerShell Read-Host (simulated).";
+if(cmd==="shift"||cmd==="break"||cmd==="continue"||cmd==="return"||cmd==="eval"||cmd==="exec"||cmd==="source"||cmd==="builtin"||cmd==="trap"||cmd==="shopt"||cmd==="setopt"||cmd==="unsetopt"||cmd==="zmodload"||cmd==="autoload"||cmd==="bindkey"||cmd==="compinit"||cmd==="rehash"||cmd==="functions"||cmd==="fc"||cmd==="select"||cmd==="until")return "Shell builtin/syntax recognized ("+cmd+"). Script execution, signal hooks and interactive completion are represented as safe practice output; no host shell is invoked.";
+if(cmd==="true")return "";
+if(cmd==="false")throw Error("Command returned status 1 (simulated).");
+if(cmd==="expr"){const expression=a.join(" ");if(/^[\d\s+*/%()-]+$/.test(expression)){try{return String(Function('"use strict";return ('+expression+')')())}catch{}}return expression;}
+if(cmd==="sleep"||cmd==="start-sleep")return "Sleep command accepted (non-blocking simulation).";
+if(cmd==="time")return "real  0m0.001s\nuser  0m0.001s\nsys   0m0.000s (simulated)";
+if(cmd==="cal")return new Date().toLocaleDateString(undefined,{month:"long",year:"numeric"});
+if(cmd==="uptime")return "up "+Math.max(1,Math.round(performance.now()/60000))+" minutes, 1 user, WebOS virtual session";
+if(cmd==="hostname")return "WEBOS-PC";
+if(cmd==="uname")return "WebOS Virtual PC 1.0 browser environment";
+if(cmd==="id")return "uid=1000(user) gid=1000(user) groups=1000(user) [simulated]";
+if(cmd==="get-date"||cmd==="date")return new Date().toString();
+if(cmd==="clear"||cmd==="clear-host"||cmd==="cls")return {clear:true};
+if(cmd==="type"||cmd==="which"||cmd==="get-command")return first?first+" is available as a WebOS virtual command":"Use "+cmd+" <command>.";
+if(cmd==="alias"||cmd==="unalias"||cmd==="set-alias"||cmd==="get-alias")return "Shell aliases are session-local. Common aliases: ll=ls -la, la=ls -a, cls=clear.";
+if(cmd==="command"||cmd==="help"||cmd==="man")return first?(commandDescriptions[first.toLowerCase()]||"Manual entry for "+first+": behavior is simulated in WebOS."):"Type commands to browse the shell command reference.";
+if(cmd==="get-variable"||cmd==="get-variable"||cmd==="get-childitem"&&first==="Env:")return Object.entries(vars).map(([k,v])=>k+"="+v).join("\n")||"No user variables.";
+if(cmd==="get-process"||cmd==="get-service"||cmd==="get-computerinfo"||cmd==="get-ciminstance"||cmd==="get-uptime"||cmd==="get-random"||cmd==="get-eventlog"||cmd==="get-winevent"||cmd==="get-scheduledtask"||cmd==="get-netipaddress"||cmd==="get-netipconfiguration"||cmd==="get-module"||cmd==="get-executionpolicy")return "Name                 Status\nWebOS Desktop        Running\nWebOS Terminal       Running\nWebOS Browser        Running\n[Virtual sample data; host system is not queried.]";
+if(cmd==="get-filehash"||cmd==="sha256sum"){if(!file)throw Error("Usage: "+cmd+" <file>");let h=2166136261;for(const ch of String(file.file.content||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return "SIMULATED-"+(h>>>0).toString(16).padStart(8,"0")+"  "+file.file.name;}
+if(cmd==="get-acl"||cmd==="set-acl"||cmd==="get-authenticodesignature")return "Virtual file metadata only; operating-system ACLs and signatures are not available.";
+if(cmd==="convertto-json"){return JSON.stringify({name:first||"WebOS",path:cwd,files:files().length},null,2)}
+if(cmd==="convertfrom-json"){try{return JSON.stringify(JSON.parse(a.join(" ")),null,2)}catch{return "Provide valid JSON text to convert."}}
+if(cmd==="get-help"||cmd==="get-history"||cmd==="clear-history"||cmd==="invoke-history")return cmd==="clear-history"?"History cleared for this shell session.":history.join("\n")||"No history.";
+if(cmd==="write-output"||cmd==="write-host"||cmd==="echo"||cmd==="print")return a.join(" ");
+if(cmd==="read-host")return "Interactive prompt simulated; use a variable assignment for repeatable practice.";
+if(cmd==="get-member")return "TypeName: WebOS.VirtualObject\nMembers: Name, Path, Content, Length, UpdatedAt";
+if(cmd==="get-random")return String(Math.floor(Math.random()*100)+1);
+if(cmd==="resolve-dnsname"||cmd==="test-netconnection"||cmd==="test-connection")return "Connectivity test simulated; external network access is disabled.";
+if(cmd==="get-itemproperty"||cmd==="set-itemproperty"||cmd==="remove-itemproperty"||cmd==="get-scheduledtask"||cmd==="register-scheduledtask"||cmd==="start-service"||cmd==="stop-service"||cmd==="restart-service"||cmd==="get-eventlog"||cmd==="get-winevent")return "PowerShell system cmdlet recognized. Changes to host registry, services, event logs and scheduled tasks are blocked.";
+if(cmd==="get-command"||cmd==="get-help")return "PowerShell help is virtual. Use commands or Get-Help <cmdlet>.";
 return null;
 }
 function renderShell(win){if(win.dataset.shellLab==='1')return;win.dataset.shellLab='1';const body=win.querySelector('.window-body');if(!body)return;
