@@ -1,13 +1,15 @@
 # WebOS
 
-A realistic Windows-inspired PC learning simulator that runs entirely in the browser. It recreates familiar desktop workflows for safe hands-on practice; it is not Windows or a full operating system. Built with vanilla HTML, CSS and JavaScript for free static hosting such as GitHub Pages.
+A Windows-inspired practical PC simulator that runs entirely in the browser. It is a free-play virtual computer environment for hands-on use; it is not Windows or a full operating system. Built with vanilla HTML, CSS and JavaScript for free static hosting such as GitHub Pages.
 
-## PC desktop experience
+## Practical PC environment
 - Familiar desktop shortcuts, Start menu, taskbar, notification center and quick settings
 - This PC and Recycle Bin desktop entry points, application windows and keyboard shortcuts (Win+E, Win+R)
 - Run dialog, virtual lock screen, restart and shutdown session flows
 - PC-style window chrome, context menus and system-tray interactions
-- Practice computer workflows inside the desktop instead of navigating a separate lesson dashboard
+- Free-play environment with no lessons, missions, instructor, scores or forced tutorials
+- Virtual folders and files, drag-and-drop import, rename, soft delete, restore and export
+- Virtual files remain separate from the real computer and are stored locally in this browser
 
 ## Features
 - Desktop launcher, shortcuts, taskbar and draggable/minimizable/maximizable windows
