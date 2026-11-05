@@ -1,0 +1,14 @@
+{
+  "name": "WebOS — Browser Desktop",
+  "short_name": "WebOS",
+  "description": "A modern local-first desktop workspace in your browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    {"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
+}
