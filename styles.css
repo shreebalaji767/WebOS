@@ -177,3 +177,13 @@ body.light{color-scheme:light;--ink:#172338;--muted:#64748b;--line:#23344a25;--s
  .code-frame{min-height:230px}
  .code-status{font-size:9px}
 }
+
+/* Code Studio project management controls */
+.code-project-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.code-project-actions .action{white-space:nowrap}
+.code-project-actions #code-project-name{min-width:120px;flex:1 1 130px}
+@media(max-width:560px){
+ .code-project-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .code-project-actions #code-project-name,.code-project-actions #code-project-select{grid-column:1/-1;width:100%;min-width:0}
+ .code-project-actions .action{width:100%;min-width:0}
+}
