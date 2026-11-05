@@ -22,7 +22,6 @@ jobs:
           node --check upgrades-v3.js
           node --check pc-shell.js
           node --check pc-lab.js
-          node --check shell-lab.js
           node --check sw.js
       - name: Validate manifest and required files
         run: |
