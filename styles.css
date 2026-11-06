@@ -408,3 +408,21 @@ html,body{min-width:280px;min-height:100%;overscroll-behavior:none}
   .cs-gutter{font-size:10px}
   .cs-highlight,.cs-overlay-editor{font-size:11px;line-height:1.6;padding:10px}
 }
+
+/* Code Studio visibility hotfix: keep source text visible even if highlighting fails. */
+.code-studio .cs-layer-wrap{background:#101b2b!important}
+.code-studio .cs-code-layer{display:flex!important;min-height:280px!important;overflow:hidden!important}
+.code-studio .cs-highlight{display:none!important}
+.code-studio .cs-overlay-editor{
+ position:relative!important;inset:auto!important;display:block!important;
+ flex:1 1 auto!important;width:100%!important;height:100%!important;min-width:0!important;
+ min-height:280px!important;padding:13px 14px!important;margin:0!important;
+ overflow:auto!important;resize:none!important;white-space:pre!important;
+ background:#101b2b!important;color:#e6eef9!important;
+ -webkit-text-fill-color:#e6eef9!important;caret-color:#ffffff!important;
+ font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace!important;
+ opacity:1!important;visibility:visible!important;z-index:1!important;
+}
+@media(max-width:560px){
+ .code-studio .cs-overlay-editor{min-height:310px!important;padding:10px!important;font-size:12px!important}
+}
