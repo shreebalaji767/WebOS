@@ -392,3 +392,19 @@ html,body{min-width:280px;min-height:100%;overscroll-behavior:none}
 @media(max-width:850px){.code-studio-layout{height:auto;min-height:0;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(100px,auto) minmax(320px,52dvh) minmax(280px,42dvh)}.code-file-panel{border-right:0;border-bottom:1px solid #e2e8f0}.code-file-list{max-height:110px}.code-preview-panel{border-left:0;border-top:1px solid #e2e8f0}.code-frame{min-height:190px}.code-editor-panel{min-height:320px}}
 @media(max-width:560px){.code-window .window-body{padding:9px!important}.code-studio{gap:9px}.code-studio-top{display:grid;gap:9px}.code-project-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.code-project-actions #code-project-select,.code-project-actions #code-project-name{grid-column:1/-1;width:100%;min-width:0}.code-project-actions .action{width:100%;min-width:0;white-space:normal}.code-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.code-toolbar .action{width:100%;min-width:0}.code-studio-layout{grid-template-rows:minmax(95px,auto) minmax(300px,50dvh) minmax(260px,40dvh)}.code-status{font-size:8px}.code-bottom-tools{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.code-studio *{transition:none!important}}
+
+
+/* Keep splitter handles out of the single-column touch layout. */
+@media(max-width:850px){
+  .code-studio-layout>.cs-resizer{display:none!important}
+  .code-studio-layout{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(100px,auto) minmax(320px,52dvh) minmax(280px,42dvh)!important}
+  .code-file-panel{grid-row:auto}
+  .code-editor-panel{grid-row:auto}
+  .code-preview-panel{grid-row:auto}
+}
+@media(max-width:560px){
+  .code-studio-layout{grid-template-rows:minmax(95px,auto) minmax(300px,50dvh) minmax(260px,40dvh)!important}
+  .cs-layer-wrap{min-height:0}
+  .cs-gutter{font-size:10px}
+  .cs-highlight,.cs-overlay-editor{font-size:11px;line-height:1.6;padding:10px}
+}
