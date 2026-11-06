@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],PK='webos:code-projects',BK='webos:code-studio-backups';let mounted=null,saveTimer=null;
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],PK='code-projects',BK='webos:code-studio-backups';let mounted=null,saveTimer=null;
 const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}},toast=m=>{const t=$('#toast');if(t){t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}},esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const list=()=>read(PK,[]),idx=w=>Math.max(0,Number($('#code-project-select',w)?.value||0)),project=w=>list()[idx(w)]||null,file=p=>p?.files?.find(f=>f.name===p.activeFile)||p?.files?.[0],editor=w=>$('#code-source',w);
 function save(w){const p=project(w),f=file(p),e=editor(w);if(!p||!f||!e)return;f.content=e.value;p.updatedAt=new Date().toISOString();const a=list(),i=a.findIndex(x=>x.id===p.id);if(i<0)a.push(p);else a[i]=p;write(PK,a);$('#code-status-text',w).textContent='Saved locally'}
